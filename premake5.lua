@@ -38,9 +38,11 @@ project"Hazel"
 		"%{IncludeDir.GLFW}"
 	}
 
-	links{
-		"GLFW"
+	links
+	{
+		"GLFW",
 		"opengl32.lib"
+		
 	}
 
 	filter "system:windows"
