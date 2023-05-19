@@ -37,10 +37,7 @@ project "Hazel"
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
-	test
-	{
-
-	}
+	--....
 	includedirs
 	{
 		"%{prj.name}/src",
