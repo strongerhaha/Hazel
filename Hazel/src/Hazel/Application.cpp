@@ -4,7 +4,8 @@
 #include "Hazel/Log.h"
 #include"Hazel/input.h"
 #include <glad/glad.h>
-#include<iostream>
+
+#include"Hazel/Renderer/Renderer.h"
 namespace Hazel {
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
@@ -167,13 +168,18 @@ namespace Hazel {
 			glClearColor(0.2f, 0.2f, 0.2f, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
 
+			RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
+			RenderCommand::Clear();
+			Renderer::BeginScene();
+
 			m_Blueshader->Bind();
-			m_SquareVA->Bind();
-			glDrawElements(GL_TRIANGLES, m_SquareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			Renderer::Submit(m_SquareVA);
 
 			m_Shader->Bind();
-			m_VertexArray->Bind();
-			glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,nullptr);
+			Renderer::Submit(m_VertexArray);
+			Renderer::EndScene();
+
+
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
