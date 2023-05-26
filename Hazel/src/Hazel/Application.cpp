@@ -3,7 +3,7 @@
 
 #include "Hazel/Log.h"
 #include"Hazel/input.h"
-#include <glad/glad.h>
+//#include <glad/glad.h>
 
 #include"Hazel/Renderer/Renderer.h"
 namespace Hazel {
@@ -16,6 +16,7 @@ namespace Hazel {
 
 
 	Application::Application()
+		:m_Camera(-1.0f,1.0f,-1.0f,1.0f)
 	{
 		HZ_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
@@ -81,6 +82,8 @@ namespace Hazel {
 		#version 330 core
 		layout (location =0 )in vec3 a_Position;
 		layout (location =1 )in vec4 a_Color;
+		
+		uniform mat4 u_ViewProjection;
 
 		out vec3 v_Position;
 		out vec4 v_Color;
@@ -88,7 +91,7 @@ namespace Hazel {
 		{
 			v_Position=a_Position;
 			v_Color=a_Color;
-			gl_Position=vec4(a_Position,1.0f);
+			gl_Position=u_ViewProjection*vec4(a_Position,1.0f);
 		}
 		)";
 
@@ -110,12 +113,12 @@ namespace Hazel {
 		std::string vertexSrc2 = R"(
 		#version 330 core
 		layout (location =0 )in vec3 a_Position;
-
+		uniform mat4 u_ViewProjection;
 		out vec3 v_Position;
 		void main()
 		{
 			v_Position=a_Position;
-			gl_Position=vec4(a_Position,1.0f);
+			gl_Position=u_ViewProjection * vec4(a_Position,1.0f);
 		}
 		)";
 
@@ -165,18 +168,15 @@ namespace Hazel {
 	{
 		while (m_Running)
 		{
-			glClearColor(0.2f, 0.2f, 0.2f, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
-
+		
 			RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
 			RenderCommand::Clear();
-			Renderer::BeginScene();
 
-			m_Blueshader->Bind();
-			Renderer::Submit(m_SquareVA);
-
-			m_Shader->Bind();
-			Renderer::Submit(m_VertexArray);
+			//m_Camera.SetPosition({ 0.5f,0.5f,0.0f });
+			m_Camera.SetRotation(45.0f);
+			Renderer::BeginScene(m_Camera);
+			Renderer::Submit(m_Blueshader,m_SquareVA);
+			Renderer::Submit(m_Shader,m_VertexArray);
 			Renderer::EndScene();
 
 
@@ -185,7 +185,6 @@ namespace Hazel {
 				layer->OnUpdate();
 
 			m_ImGuiLayer->Begin();
-
 			for (Layer* layer : m_LayerStack)
 				layer->OnImGuiRender();
 
