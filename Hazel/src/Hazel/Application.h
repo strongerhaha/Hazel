@@ -11,6 +11,7 @@
 #include"Hazel/Renderer/Buffer.h"
 #include"Hazel/Renderer/Shader.h"
 #include"Hazel/Renderer/VertexArray.h"
+#include"Hazel/Core/Timestep.h"
 namespace Hazel {
 
 	class HAZEL_API Application
@@ -37,8 +38,8 @@ namespace Hazel {
 		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
 		LayerStack m_LayerStack;
-
-	
+		Timestep m_Timestep;
+		float m_LastFrameTime = 0.0f;
 
 	private:
 		static Application* s_Instance;
