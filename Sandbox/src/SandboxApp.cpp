@@ -90,7 +90,7 @@ public:
 		m_Shader.reset(new Hazel::Shader(vertexSrc, fragmentSrc));
 
 
-		std::string vertexSrc2 = R"(
+		std::string flatColorShaderVertexSrc = R"(
 		#version 330 core
 		layout (location =0 )in vec3 a_Position;
 		uniform mat4 u_ViewProjection;
@@ -103,17 +103,19 @@ public:
 		}
 		)";
 
-		std::string fragmentSrc2 = R"(
+		std::string  flatColorShaderFragmentSrc = R"(
 		#version 330 core
 		layout (location =0 )out vec4 color;
 		in vec3 v_Position;
+
+		uniform vec4 u_Color;
 		void main()
 		{
-			color=vec4(v_Position+0.5f,1.0f);//rgba
+			color=u_Color;//rgba
 		}
 		)";
 
-		m_Blueshader.reset(new Hazel::Shader(vertexSrc2, fragmentSrc2));
+		m_FlatColorShader.reset(new Hazel::Shader(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
 	}
 
 	void OnUpdate(Hazel::Timestep ts) override 
@@ -144,21 +146,30 @@ public:
 		Hazel::Renderer::BeginScene(m_Camera);
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+		glm::vec4 bulecolor(0.9f, 0.7f, 0.2f, 0.0f);
+		glm::vec4 redcolor(0.0f, 0.0f, 0.0f, 0.0f);
 
+		Hazel::MaterialRef material = new Hazel::Material(m_FlatColorShader);
+		Hazel::MaterialInstanceRef mi = new Hazel::MaterialInstance(material);
+
+
+		squareMesh->SetMaterial(mi);
 
 		for (int y = 0; y < 20; y++)
 		{
 			for (int  x = 0; x < 20; x++)
 			{
 				glm::vec3 pos(x * 0.11f, y * 0.11f, 0);
+				/*
+				if (x % 2 == 0)
+					m_FlatColorShader->UploadUniformFloat4("u_Color",bulecolor);
+				else
+					m_FlatColorShader->UploadUniformFloat4("u_Color",redcolor);
+					*/
+					
 		glm::mat4 tansform = glm::translate(glm::mat4(1.0f), pos)* scale;
-
-
-		Hazel::Renderer::Submit(m_Blueshader, m_SquareVA, tansform);
-
+		Hazel::Renderer::Submit(m_FlatColorShader, m_SquareVA, tansform);
 			}
-
-
 		}
 
 
@@ -178,7 +189,7 @@ private:
 	std::shared_ptr<Hazel::Shader> m_Shader;
 	std::shared_ptr<Hazel::VertexArray> m_VertexArray;
 					
-	std::shared_ptr<Hazel::Shader> m_Blueshader;
+	std::shared_ptr<Hazel::Shader> m_FlatColorShader;
 	std::shared_ptr<Hazel::VertexArray> m_SquareVA;
 
 	Hazel::OrthographicCamera m_Camera;
