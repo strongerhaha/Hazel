@@ -16,4 +16,7 @@
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="asset\textures\awesomeface.png" />
+  </ItemGroup>
 </Project>
