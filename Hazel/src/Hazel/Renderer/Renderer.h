@@ -10,6 +10,7 @@ namespace Hazel {
 	public:
 		static void BeginScene(OrthographicCamera& camera);
 		static void EndScene();
+		static void init();
 		static void Submit(const Ref<Shader>& shader,const Ref<VertexArray>& vertexArray,const glm::mat4 transform=glm::mat4 (0.1f));
 
 		inline static  RendererAPI::API GetAPI() {	return RendererAPI::GetAPI();	}

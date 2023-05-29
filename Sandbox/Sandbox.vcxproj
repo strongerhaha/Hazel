@@ -139,6 +139,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="asset\textures\123.jpg" />
     <Image Include="asset\textures\awesomeface.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -6,6 +6,10 @@ namespace Hazel {
 	class RenderCommand
 	{
 	public:
+		inline static void Init()
+		{
+			s_RendererAPI->Init();
+		}
 		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray)
 		{
 			s_RendererAPI->DrawIndexed(vertexArray);//并不是自己调用自己。RendererAPI根据api 调用

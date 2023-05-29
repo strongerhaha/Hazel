@@ -25,7 +25,7 @@ namespace Hazel {
 		m_Window->SetVSync(false);
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
-
+		Renderer::init();
 	}
 
 	Application::~Application()

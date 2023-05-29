@@ -18,5 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="asset\textures\awesomeface.png" />
+    <Image Include="asset\textures\123.jpg" />
   </ItemGroup>
 </Project>

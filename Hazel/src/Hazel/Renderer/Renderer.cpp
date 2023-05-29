@@ -4,6 +4,10 @@
 namespace Hazel {
 
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
+	void Renderer::init()
+	{
+		RenderCommand::Init();
+	}
 	void Renderer::BeginScene(OrthographicCamera& camera)
 	{
 		m_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
@@ -11,6 +15,7 @@ namespace Hazel {
 	void Renderer::EndScene()
 	{
 	}
+	
 	void Renderer::Submit(const Ref<Shader>& shader,const Ref<VertexArray>& vertexArray,const glm::mat4 transform)
 	{
 		shader->Bind();
