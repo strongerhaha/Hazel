@@ -20,4 +20,7 @@
     <Image Include="asset\textures\awesomeface.png" />
     <Image Include="asset\textures\123.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="asset\shaders\Texture.glsl" />
+  </ItemGroup>
 </Project>

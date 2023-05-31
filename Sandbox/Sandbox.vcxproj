@@ -142,6 +142,9 @@
     <Image Include="asset\textures\123.jpg" />
     <Image Include="asset\textures\awesomeface.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="asset\shaders\Texture.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
