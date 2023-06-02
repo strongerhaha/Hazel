@@ -15,12 +15,13 @@
     <ClCompile Include="src\SandboxApp.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Sandbox2D.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="asset\textures\awesomeface.png" />
-    <Image Include="asset\textures\123.jpg" />
+    <ClInclude Include="src\Sandbox2D.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="asset\shaders\FlatColor.glsl" />
     <None Include="asset\shaders\Texture.glsl" />
   </ItemGroup>
 </Project>
