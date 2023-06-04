@@ -6,6 +6,7 @@ namespace Hazel {
 
 		Ref<VertexArray> VertexArray::Create()
 		{
+		
 			switch (Renderer::GetAPI())
 			{
 

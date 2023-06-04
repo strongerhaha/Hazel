@@ -16,7 +16,6 @@ private:
 	Hazel::OrthographicCameraController m_CameraController;
 	Hazel::Ref<Hazel::Shader> m_FlatColorShader;
 
-
 	Hazel::Ref<Hazel::Texture2D> m_Texture, m_HazelTexture;
 	glm::vec4 m_SquareColor = { 0.0f,0.2f,0.8f,1 };
 	Hazel::Ref<Hazel::VertexArray> m_VertexArray;
