@@ -17,8 +17,10 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
 
 
 	Hazel::Renderer2D::BeginScene(m_CameraController.GetCamera());
-	Hazel::Renderer2D::DrawQuad({ 0.5f,0.0f }, { 0.5f,0.5f }, {0.8f,0.5f,0.7f,1});
-	Hazel::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 1.8f,1.8f }, { 0.0f,0.5f,0.7f,1 });
+	Hazel::Renderer2D::DrawQuad({ 0.5f,0.0f }, { 0.5f,0.5f }, {0.0f,0.7f,0.5f,1.0f});
+	Hazel::Renderer2D::DrawQuad({ -1.0f,-1.0f}, { 1.8f,1.8f }, { 0.0f,0.5f,0.9f,1.0f });
+	Hazel::Renderer2D::DrawQuad({ 0.0f,0.0f,-0.1f }, { 1.8f,1.8f }, m_HazelTexture);
+
 	Hazel::Renderer2D::EndScene();
 
 
@@ -38,7 +40,8 @@ void Sandbox2D::OnEvent(Hazel::Event& e)
 
 void Sandbox2D::OnAttach()
 {
-
+	m_Texture = (Hazel::Texture2D::Create("asset/textures/awesomeface.png"));
+	m_HazelTexture = (Hazel::Texture2D::Create("asset/textures/container.jpg"));
 	
 
 }
