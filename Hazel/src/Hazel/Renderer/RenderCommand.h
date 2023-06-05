@@ -14,9 +14,9 @@ namespace Hazel {
 		{
 			s_RendererAPI->SetViewport(x, y, width, height);
 		}
-		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray)
+		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray,uint32_t count=0)
 		{
-			s_RendererAPI->DrawIndexed(vertexArray);//并不是自己调用自己。RendererAPI根据api 调用
+			s_RendererAPI->DrawIndexed(vertexArray, count);//并不是自己调用自己。RendererAPI根据api 调用
 		}
 		inline static void Clear()
 		{
