@@ -2,6 +2,6 @@
 .vs/
 bin/
 bin-int/
-Sandbox/*.json
+
 # Files
 *.user
