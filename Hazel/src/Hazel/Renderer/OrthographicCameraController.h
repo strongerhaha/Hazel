@@ -6,6 +6,15 @@
 #include"Hazel/Events/MouseEvent.h"
 namespace Hazel {
 
+	struct OrthographicCameraBounds
+	{
+		float Left, Right;
+		float Bottom, Top;	
+
+		float GetWidth() { return Right - Left; }
+		float GetHeight() { return Top - Bottom; }
+	};
+
 	class OrthographicCameraController
 	{
 	public:
@@ -16,6 +25,7 @@ namespace Hazel {
 		const OrthographicCamera& GetCamera()const { return m_Camera; }
 		float GetZoomLevel(){ return m_ZoomLevel; }
 		void SetZoomLevel(float level) { m_ZoomLevel = level; }
+		const OrthographicCameraBounds& GetBounds() const { return m_Bounds; }
 	private:
 		bool OnMouseScrolled(MouseScrolledEvent& e);
 		bool OnWindowResized(WindowResizeEvent& e);
@@ -23,6 +33,7 @@ namespace Hazel {
 
 		float m_ZoomLevel = 1.0f;
 		float m_AspectRatio;
+		OrthographicCameraBounds m_Bounds;
 		OrthographicCamera m_Camera;
 		bool m_Rotation;
 		float m_CameraRotation=0.0f;
