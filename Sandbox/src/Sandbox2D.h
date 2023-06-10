@@ -25,5 +25,8 @@ private:
 	Hazel::Ref<Hazel::VertexArray> m_SquareVA;
 	ParticleSystem m_ParticleSystem;
 
+
+	Hazel::Ref<Hazel::Frambuffer>m_Framebuffer;
+
 	ParticleProps m_Particle;
 };
