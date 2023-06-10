@@ -2,6 +2,8 @@
 .vs/
 bin/
 bin-int/
+Sandbox/HazelProfile-Runtime.json
 
 # Files
 *.user
+HazelProfile-Runtime.json

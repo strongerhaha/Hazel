@@ -14,7 +14,7 @@ struct ParticleProps
 class ParticleSystem
 {
 public:
-	ParticleSystem(uint32_t MaxPaticle=100000);
+	ParticleSystem(uint32_t MaxPaticle = 100000);
 
 	void OnUpdate(Hazel::Timestep ts);
 	void OnRender(Hazel::OrthographicCamera& camera);
@@ -37,5 +37,5 @@ private:
 	std::vector<Particle> m_ParticlePool;
 	uint32_t m_PoolIndex;
 
-	
+
 };

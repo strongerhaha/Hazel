@@ -22,15 +22,10 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
 	HZ_PROFILE_SCOPE("Renderer Prep");
 	Hazel::RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
 	Hazel::RenderCommand::Clear();
-
 	}
-
 	{
-		
 		HZ_PROFILE_SCOPE("Renderer Draw");
 #if 0
-
-
 
 		Hazel::Renderer2D::BeginScene(m_CameraController.GetCamera());
 	
@@ -62,18 +57,19 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
 			x = (x / width) * bounds.GetWidth() - bounds.GetWidth() * 0.5f;
 			y = bounds.GetHeight() * 0.5f - (y / height) * bounds.GetHeight();
 			m_Particle.Position = { x + pos.x, y + pos.y };
-			for (int i = 0; i < 50; i++)
+			for (int i = 0; i < 2; i++)
 				m_ParticleSystem.Emit(m_Particle);
 		}
-
+	
 		m_ParticleSystem.OnUpdate(ts);
 		m_ParticleSystem.OnRender(m_CameraController.GetCamera());
-
-
+		
 
 		Hazel::Renderer2D::BeginScene(m_CameraController.GetCamera());
-		Hazel::Renderer2D::DrawQuad({ 0.0f,0.0f }, { 0.5f,0.5f }, m_SheetTexture, 1.0f, m_SquareColor);
+		Hazel::Renderer2D::DrawQuad({ 0.0f,0.0f }, { 10.0f,10.0f }, m_SheetTestTexture, 1.0f, m_SquareColor);
+		
 		Hazel::Renderer2D::EndScene();
+	
 	}
 
 }
@@ -109,9 +105,11 @@ void Sandbox2D::OnAttach()
 	m_HazelTexture = (Hazel::Texture2D::Create("asset/textures/container.jpg"));
 	m_SheetTexture = (Hazel::Texture2D::Create("asset/game/textures/spritesheet_objects.png"));
 
+	//m_SheetTestTexture = Hazel::SubTexture2D::CreteFromCoords(m_SheetTexture, { 0,0 }, {128,128});
+	m_SheetTestTexture = Hazel::SubTexture2D::CreteFromCoords(m_SheetTexture, { 0,0 }, { 128,128 }, {1,2});
 	m_Particle.ColorBegin = { 254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f };
 	m_Particle.ColorEnd = { 254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f };
-	m_Particle.SizeBegin = 0.5f, m_Particle.SizeVariation = 0.3f, m_Particle.SizeEnd = 0.0f;
+	m_Particle.SizeBegin = 0.5f, m_Particle.SizeVariation = 0.25f, m_Particle.SizeEnd = 0.0f;
 	m_Particle.LifeTime = 1.0f;
 	m_Particle.Velocity = { 0.0f, 0.0f };
 	m_Particle.VelocityVariation = { 3.0f, 1.0f };

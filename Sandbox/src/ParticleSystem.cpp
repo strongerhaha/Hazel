@@ -28,7 +28,7 @@ std::uniform_int_distribution<std::mt19937::result_type> Random::s_Distribution;
 
 
 ParticleSystem::ParticleSystem(uint32_t MaxPaticle)
-	:m_PoolIndex(MaxPaticle-1)
+	:m_PoolIndex(MaxPaticle - 1)
 {
 	m_ParticlePool.resize(MaxPaticle);
 }
@@ -56,7 +56,7 @@ void ParticleSystem::OnRender(Hazel::OrthographicCamera& camera)
 {
 
 	Hazel::Renderer2D::BeginScene(camera);
-	
+
 	for (auto& particle : m_ParticlePool)
 	{
 		if (!particle.Active)
@@ -72,7 +72,7 @@ void ParticleSystem::OnRender(Hazel::OrthographicCamera& camera)
 		Hazel::Renderer2D::DrawRotationQuad(position, { size,size }, particle.Rotation, color);
 
 	}
-		Hazel::Renderer2D::EndScene();
+	Hazel::Renderer2D::EndScene();
 }
 
 void ParticleSystem::Emit(const ParticleProps& particleProps)
