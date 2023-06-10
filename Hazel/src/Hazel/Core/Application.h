@@ -20,17 +20,16 @@ namespace Hazel {
 		Application();
 		virtual ~Application();
 
-		void Run();
-
 		void OnEvent(Event& e);
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
-
+		void Run();
 		inline Window& GetWindow() { return *m_Window; }
-
+		void Close();
 		inline static Application& Get() { return *s_Instance; }
 	private:
+		
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:
