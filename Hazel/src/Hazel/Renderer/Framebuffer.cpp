@@ -3,7 +3,7 @@
 #include"Hazel/Renderer/Renderer.h"
 #include"Platform/OpenGL/OpenGLFramebuffer.h"
 namespace Hazel {
-	Ref<Frambuffer> Frambuffer::Create(const FramebufferSpecification& spec)
+	Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec)
 	{
 		switch (Renderer::GetAPI())
 		{

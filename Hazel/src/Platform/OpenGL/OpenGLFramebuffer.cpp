@@ -10,9 +10,19 @@ namespace Hazel {
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
+		glDeleteTextures(1, &m_ColorAttachment);
+		glDeleteTextures(1, &m_DepthAttachment);
 	}
 	void OpenGLFramebuffer::Invalidate()
 	{//帧缓冲
+
+		if (m_RendererID)
+		{
+			glDeleteFramebuffers(1, &m_RendererID);
+			glDeleteTextures(1, &m_ColorAttachment);
+			glDeleteTextures(1, &m_DepthAttachment);
+		}
+
 		glCreateFramebuffers(1, &m_RendererID);//新建一个类似画布吧,附加至少一个缓冲（颜色、深度或模板缓冲）。至少有一个颜色附件(Attachment)。所有的附件都必须是完整的（保留了内存）。每个缓冲都应该有相同的样本数。
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);//绑定ID，
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_ColorAttachment);//纹理附件创建
@@ -37,9 +47,18 @@ namespace Hazel {
 	void OpenGLFramebuffer::Bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 	}
 	void OpenGLFramebuffer::Unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+	void OpenGLFramebuffer::Resize(uint32_t Width, uint32_t Height)
+	{
+		m_Specification.Width = Width;
+		m_Specification.Height = Height;
+
+		Invalidate();
+
 	}
 }

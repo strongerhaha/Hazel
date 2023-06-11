@@ -5,16 +5,16 @@
 
 namespace Hazel {
 
-	class HazelEditor : public Hazel::Application
+	class Hazelnut : public Hazel::Application
 	{
 	public:
-		HazelEditor()
-			:Application("Hazel Editor")
+		Hazelnut()
+			:Application("Hazelnut")
 		{
 			PushLayer(new EditorLayer());
 		}
 
-		~HazelEditor()
+		~Hazelnut()
 		{
 
 		}
@@ -23,6 +23,6 @@ namespace Hazel {
 
 	Application* CreateApplication()
 	{
-		return new HazelEditor();
+		return new Hazelnut();
 	}
 }

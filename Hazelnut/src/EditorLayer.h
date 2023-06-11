@@ -23,11 +23,11 @@ namespace Hazel {
 		glm::vec4 m_SquareColor = { 1.5f,1.5f,0.8f,1 };
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexArray> m_SquareVA;
-		
+		glm::vec2 m_ViewportSize{0.0f,0.0f};
 
 
-		Ref<Frambuffer>m_Framebuffer;
-
-	
+		Ref<Framebuffer>m_Framebuffer;
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
 	};
 }

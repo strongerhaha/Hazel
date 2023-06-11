@@ -14,8 +14,8 @@ namespace Hazel {
 	void EditorLayer::OnUpdate(Hazel::Timestep ts)
 	{
 		HZ_PROFILE_FUNCTION();
-
-		m_CameraController.OnUpdate(ts);
+		if(m_ViewportFocused)//如果选中才能移动摄像头
+			m_CameraController.OnUpdate(ts);
 		Hazel::Renderer2D::ResetStats();
 
 		{
@@ -109,20 +109,38 @@ namespace Hazel {
 				}
 				ImGui::EndMenuBar();
 			}
-			ImGui::End();
+			
 		}
 
 		ImGui::Begin("Settings");
 		auto stats = Hazel::Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
-		ImGui::Text("Draw Calls:%d", stats.DrawCalls);
+		ImGui::Text("Draw Calls:%d", stats.DrawCalls);//显示drawcalls个数相关窗口
 		ImGui::Text("Quad:%d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 		ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
 
+		ImGui::End();
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
+
+		ImGui::Begin("Viewport");
+		m_ViewportFocused = ImGui::IsWindowFocused();//是否选中
+		m_ViewportHovered = ImGui::IsWindowHovered();//鼠标是否在上面
+		Application::Get().GetImGuiLayer()->BlockEvents(m_ViewportFocused&&m_ViewportHovered);//如果在Viewport窗口或者在那个上面就停止那个e的event获取
+
+		ImVec2 viewportPanelSize=ImGui::GetContentRegionAvail();
+		
+		if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize))
+		{
+			m_Framebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);//重置frambuffer的大小
+			m_ViewportSize = { viewportPanelSize.x,viewportPanelSize.y };
+			m_CameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);//重置摄像机的大小
+		}
 		uint32_t textureID = m_Framebuffer->GetColorAttachment();//把这个作为ID返回就行，数值一样但是他们的地址是不一样的
-		ImGui::Image((void*)textureID, ImVec2{ 1280.0f, 720.0f }, { 1,0 }, { 0, 1 });//将帧画在imgui里面
+		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0, 1 }, { 1,0 });//将帧画在imgui里面,{1,0,0,1}画面反了
+		ImGui::End();
+		ImGui::PopStyleVar();
 		ImGui::End();
 	}
 
@@ -145,7 +163,7 @@ namespace Hazel {
 		Hazel::FramebufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = Hazel::Frambuffer::Create(fbSpec);
+		m_Framebuffer = Hazel::Framebuffer::Create(fbSpec);
 
 	}
 
