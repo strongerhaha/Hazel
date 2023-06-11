@@ -26,7 +26,7 @@ private:
 	ParticleSystem m_ParticleSystem;
 
 
-	Hazel::Ref<Hazel::Frambuffer>m_Framebuffer;
+
 
 	ParticleProps m_Particle;
 };
