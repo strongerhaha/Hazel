@@ -6,52 +6,38 @@
 #include<chrono>
 namespace Hazel {
 	EditorLayer::EditorLayer()
-		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true), m_SquareColor({ 0.2f, 0.3f, 0.8f, 1.0f })
+		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true)
 	{
 
 	}
 
-	void EditorLayer::OnUpdate(Hazel::Timestep ts)
+	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		HZ_PROFILE_FUNCTION();
+		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
+			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		{
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+		}
 		if(m_ViewportFocused)//如果选中才能移动摄像头
 			m_CameraController.OnUpdate(ts);
-		Hazel::Renderer2D::ResetStats();
 
-		{
-			HZ_PROFILE_SCOPE("Renderer Prep");
-			m_Framebuffer->Bind();//绑定画布，之后所有画的东西都会画在这framebuffer里面
-			Hazel::RenderCommand::Clear();
-			Hazel::RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
-		}
-		{
-			HZ_PROFILE_SCOPE("Renderer Draw");
+	
+		Renderer2D::ResetStats();
+		m_Framebuffer->Bind();//绑定画布，之后所有画的东西都会画在这framebuffer里面
+		RenderCommand::Clear();
+		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
+		
+		
+		Renderer2D::BeginScene(m_CameraController.GetCamera());
+		m_ActiveScene->OnUpdata(ts);//scene的更新,要在beginscene后面
+		
 
+		Renderer2D::EndScene();
 
-			Hazel::Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-			for (float y = -5.0f; y < 5.0f; y += 0.5f)
-			{
-				for (float x = -5.0f; x < 5.0f; x += 0.5f)
-				{
-					glm::vec4 color = { (x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.7f };
-					Hazel::Renderer2D::DrawQuad({ x, y }, { 0.3f, 0.3f }, color);
-				}
-			}
-			Hazel::Renderer2D::EndScene();
-
-			Hazel::Renderer2D::BeginScene(m_CameraController.GetCamera());
-			Hazel::Renderer2D::DrawRotationQuad({ -1.0f,0.0f }, { 0.5f,0.5f }, glm::radians(45.0f), { 0.0f,0.5f,0.9f,1.0f });
-			Hazel::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.5f,0.5f }, { 0.0f,0.5f,0.9f,1.0f });
-			Hazel::Renderer2D::DrawRotationQuad({ 1.0f,-1.0f }, { 0.5f,0.5f }, glm::radians(45.0f), m_HazelTexture, 1.0f);
-			Hazel::Renderer2D::DrawQuad({ 1.0f,-1.0f }, { 0.5f,0.5f }, m_HazelTexture, 1.0f, { 0.0f,0.5f,0.9f,1.0f });
-			Hazel::Renderer2D::EndScene();
-			Hazel::Renderer2D::BeginScene(m_CameraController.GetCamera());
-			Hazel::Renderer2D::DrawQuad({ 0.0f,0.0f }, { 10.0f,10.0f }, m_SheetTestTexture, 1.0f, m_SquareColor);
-			Hazel::Renderer2D::EndScene();
-
-			m_Framebuffer->Unbind();
-		}
+		m_Framebuffer->Unbind();
 
 	}
 
@@ -104,7 +90,7 @@ namespace Hazel {
 			{
 				if (ImGui::BeginMenu("File"))
 				{
-					if (ImGui::MenuItem("Exit")) Hazel::Application::Get().Close();
+					if (ImGui::MenuItem("Exit")) Application::Get().Close();
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenuBar();
@@ -113,13 +99,14 @@ namespace Hazel {
 		}
 
 		ImGui::Begin("Settings");
-		auto stats = Hazel::Renderer2D::GetStats();
+		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
 		ImGui::Text("Draw Calls:%d", stats.DrawCalls);//显示drawcalls个数相关窗口
 		ImGui::Text("Quad:%d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
-		ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
+		auto& squareColor = m_ActiveScene->Reg().get<SpriteRendererComponent>(m_SquareEntity).Color;
+		ImGui::ColorEdit4("Square Color", glm::value_ptr(squareColor));
 
 		ImGui::End();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
@@ -130,13 +117,13 @@ namespace Hazel {
 		Application::Get().GetImGuiLayer()->BlockEvents(m_ViewportFocused&&m_ViewportHovered);//如果在Viewport窗口或者在那个上面就停止那个e的event获取
 
 		ImVec2 viewportPanelSize=ImGui::GetContentRegionAvail();
-		
-		if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize))
+		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+		/*if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize) && viewportPanelSize.x>0 && viewportPanelSize.y>0)
 		{
 			m_Framebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);//重置frambuffer的大小
 			m_ViewportSize = { viewportPanelSize.x,viewportPanelSize.y };
 			m_CameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);//重置摄像机的大小
-		}
+		}*/
 		uint32_t textureID = m_Framebuffer->GetColorAttachment();//把这个作为ID返回就行，数值一样但是他们的地址是不一样的
 		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0, 1 }, { 1,0 });//将帧画在imgui里面,{1,0,0,1}画面反了
 		ImGui::End();
@@ -144,7 +131,7 @@ namespace Hazel {
 		ImGui::End();
 	}
 
-	void EditorLayer::OnEvent(Hazel::Event& e)
+	void EditorLayer::OnEvent(Event& e)
 	{
 		m_CameraController.OnEvent(e);
 	}
@@ -152,19 +139,23 @@ namespace Hazel {
 	void EditorLayer::OnAttach()
 	{
 		HZ_PROFILE_FUNCTION();
-		m_Texture = (Hazel::Texture2D::Create("asset/textures/awesomeface.png"));
-		m_HazelTexture = (Hazel::Texture2D::Create("asset/textures/container.jpg"));
-		m_SheetTexture = (Hazel::Texture2D::Create("asset/game/textures/spritesheet_objects.png"));
+		m_Texture = (Texture2D::Create("asset/textures/awesomeface.png"));
+		m_HazelTexture = (Texture2D::Create("asset/textures/container.jpg"));
+		m_SheetTexture = (Texture2D::Create("asset/game/textures/spritesheet_objects.png"));
 
-		//m_SheetTestTexture = Hazel::SubTexture2D::CreteFromCoords(m_SheetTexture, { 0,0 }, {128,128});
-		m_SheetTestTexture = Hazel::SubTexture2D::CreteFromCoords(m_SheetTexture, { 0,0 }, { 128,128 }, { 1,2 });
+		//m_SheetTestTexture = SubTexture2D::CreteFromCoords(m_SheetTexture, { 0,0 }, {128,128});
+		m_SheetTestTexture = SubTexture2D::CreteFromCoords(m_SheetTexture, { 0,0 }, { 128,128 }, { 1,2 });
 	
 
-		Hazel::FramebufferSpecification fbSpec;
+		FramebufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = Hazel::Framebuffer::Create(fbSpec);
-
+		m_Framebuffer = Framebuffer::Create(fbSpec);
+		m_ActiveScene = CreateRef<Scene>();
+		auto square=m_ActiveScene->CreateEntity(); //entity belong to scene
+		m_ActiveScene->Reg().emplace<TransformComponent>(square);//传数据/
+		m_ActiveScene->Reg().emplace<SpriteRendererComponent>(square, glm::vec4{0.0f,1.0f,0.0f,1.0f});//整个传进去颜色。
+		m_SquareEntity = square;
 	}
 
 	void EditorLayer::OnDetach()

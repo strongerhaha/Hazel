@@ -20,13 +20,14 @@ namespace Hazel {
 		Ref<SubTexture2D> m_SheetTestTexture;
 		Ref<Texture2D> m_SheetTexture;
 		Ref<Texture2D> m_Texture, m_HazelTexture;
-		glm::vec4 m_SquareColor = { 1.5f,1.5f,0.8f,1 };
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexArray> m_SquareVA;
 		glm::vec2 m_ViewportSize{0.0f,0.0f};
-
-
+		Ref<Scene>m_ActiveScene;
 		Ref<Framebuffer>m_Framebuffer;
+		entt::entity m_SquareEntity;
+
+
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
 	};
