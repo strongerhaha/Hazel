@@ -24,7 +24,7 @@
 #include"Hazel/Scene/Scene.h"
 #include"Hazel/Scene/Components.h"
 #include"Hazel/Renderer/OrthographicCamera.h"
-
+#include"Hazel/Scene/Entity.h"
 #include"Hazel/Core/Timestep.h"
 // ---Entry Point---------------------
 

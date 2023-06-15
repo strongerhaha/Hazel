@@ -31,11 +31,10 @@ namespace Hazel {
 		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
 		
 		
-		Renderer2D::BeginScene(m_CameraController.GetCamera());
+	
 		m_ActiveScene->OnUpdata(ts);//scene的更新,要在beginscene后面
 		
-
-		Renderer2D::EndScene();
+		
 
 		m_Framebuffer->Unbind();
 
@@ -105,9 +104,22 @@ namespace Hazel {
 		ImGui::Text("Quad:%d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
-		auto& squareColor = m_ActiveScene->Reg().get<SpriteRendererComponent>(m_SquareEntity).Color;
-		ImGui::ColorEdit4("Square Color", glm::value_ptr(squareColor));
+		if (m_SquareEntity)
+		{
+			ImGui::Separator();
+			ImGui::Text("%s", m_SquareEntity.GetComponent<TagComponent>().Tag.c_str());//获得entity的名字tag
+			auto& squareColor = m_SquareEntity.GetComponent<SpriteRendererComponent>().Color;//获得颜色
+			ImGui::ColorEdit4("Square Color", glm::value_ptr(squareColor));
+			ImGui::Separator();
+		}
+		ImGui::DragFloat3("Camera Transform", 
+			glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
 
+		if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))//一开始是ture，没被勾选是False，类似开关switch两个摄像头
+		{
+			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
+			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
+		}
 		ImGui::End();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
 
@@ -150,12 +162,20 @@ namespace Hazel {
 		FramebufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = Framebuffer::Create(fbSpec);
+		m_Framebuffer = Framebuffer::Create(fbSpec);//Framebuffer的创建
+
 		m_ActiveScene = CreateRef<Scene>();
-		auto square=m_ActiveScene->CreateEntity(); //entity belong to scene
-		m_ActiveScene->Reg().emplace<TransformComponent>(square);//传数据/
-		m_ActiveScene->Reg().emplace<SpriteRendererComponent>(square, glm::vec4{0.0f,1.0f,0.0f,1.0f});//整个传进去颜色。
-		m_SquareEntity = square;
+		auto square=m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
+		//把entt：：entity和scene传进去，自己建立一个新的api控制entity
+		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });//添加颜色
+		m_SquareEntity = square;//copy
+
+		m_CameraEntity = m_ActiveScene->CreateEntity("Camera entity");//z在这里创建了照相机绑定了
+		m_CameraEntity.AddComponent<CameraComponent>(glm::ortho(-16.0f, 16.0f, -9.0f, 9.0f, -1.0f, 1.0f));
+
+		m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Space Entity");
+		auto& cc=m_SecondCamera.AddComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));
+		cc.Primary = false;
 	}
 
 	void EditorLayer::OnDetach()

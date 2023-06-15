@@ -35,7 +35,7 @@ namespace Hazel {
 		uint32_t TextureSlotIndex = 1;
 		glm::vec4 QuadVertexPositions[4];//基础坐标，用来与transform相乘
 
-		Renderer2D::Statistics Stats;//
+		Renderer2D::Statistics Stats;
 	};
 	static Renderer2DData s_Data;
 
@@ -101,6 +101,17 @@ namespace Hazel {
 	{
 		delete[] s_Data.QuadVertexBufferBase;
 		HZ_PROFILE_FUNCTION();
+	}
+	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
+	{
+		HZ_PROFILE_FUNCTION();
+		glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
+		s_Data.TextureShader->Bind();
+
+		s_Data.TextureShader->SetMat4("u_ViewProjection", viewProj);
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+		s_Data.TextureSlotIndex = 1;//纹理绑定，0是空白纹理
 	}
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
