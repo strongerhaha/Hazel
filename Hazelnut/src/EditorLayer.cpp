@@ -20,6 +20,7 @@ namespace Hazel {
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);//resize 里面有SetViewPortSize
 		}
 		if(m_ViewportFocused)//如果选中才能移动摄像头
 			m_CameraController.OnUpdate(ts);
@@ -29,13 +30,8 @@ namespace Hazel {
 		m_Framebuffer->Bind();//绑定画布，之后所有画的东西都会画在这framebuffer里面
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
-		
-		
-	
 		m_ActiveScene->OnUpdata(ts);//scene的更新,要在beginscene后面
 		
-		
-
 		m_Framebuffer->Unbind();
 
 	}
@@ -120,6 +116,14 @@ namespace Hazel {
 			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
 			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
 		}
+
+		{//缩放摄像机
+			auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
+			float orthoSize = camera.GetOrthographicSize();
+			if (ImGui::DragFloat("Second Camera Ortho Size", &orthoSize))
+				camera.SetOrthographicSize(orthoSize);
+		}
+
 		ImGui::End();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
 
@@ -171,11 +175,39 @@ namespace Hazel {
 		m_SquareEntity = square;//copy
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera entity");//z在这里创建了照相机绑定了
-		m_CameraEntity.AddComponent<CameraComponent>(glm::ortho(-16.0f, 16.0f, -9.0f, 9.0f, -1.0f, 1.0f));
+		m_CameraEntity.AddComponent<CameraComponent>();
 
 		m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Space Entity");
-		auto& cc=m_SecondCamera.AddComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));
+		auto& cc=m_SecondCamera.AddComponent<CameraComponent>();
 		cc.Primary = false;
+
+		class CameraController :public ScriptableEntity
+		{
+		public:
+			void OnCreate()
+			{
+				
+				//GetComponent<TransformComponent>();
+			}
+			void OnDestroy()
+			{
+
+			}
+			void OnUpdate(Timestep ts)
+			{
+				auto& transform = GetComponent<TransformComponent>().Transform;
+				float speed = 5.0f;
+				if (Input::IsKeyPressed(HZ_KEY_A))
+					transform[0][0] -= speed * ts;//transform是那个矩阵吧[3][0]是x，[3][1]是y,[3][2]是z [3][3]是w用来透视
+				if (Input::IsKeyPressed(HZ_KEY_D))
+					transform[0][0] += speed * ts;//transform是那个矩阵吧
+				if (Input::IsKeyPressed(HZ_KEY_W))
+					transform[3][3] += speed * ts;//transform是那个矩阵吧
+				if (Input::IsKeyPressed(HZ_KEY_S))
+					transform[3][3] -= speed * ts;//transform是那个矩阵吧
+			}
+		};
+		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();//绑定控制，通过Component系统，可以通过改变绑定更换可以控制的摄像机
 	}
 
 	void EditorLayer::OnDetach()

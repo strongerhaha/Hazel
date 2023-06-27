@@ -19,11 +19,13 @@
 #include"Hazel/Renderer/Texture.h"
 #include"Hazel/Renderer/Buffer.h"
 #include"Hazel/Renderer/Shader.h"
+
 #include"Hazel/Renderer/Framebuffer.h"
 #include"Hazel/Renderer/VertexArray.h"
 #include"Hazel/Scene/Scene.h"
 #include"Hazel/Scene/Components.h"
 #include"Hazel/Renderer/OrthographicCamera.h"
+#include"Hazel/Scene/ScriptableEntity.h"
 #include"Hazel/Scene/Entity.h"
 #include"Hazel/Core/Timestep.h"
 // ---Entry Point---------------------

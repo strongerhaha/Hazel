@@ -1,7 +1,8 @@
 #pragma once
 #include"glm/glm.hpp"
-#include"Hazel/Renderer/Camera.h"
+#include"ScenceCamera.h"//继承了Camera
 #include <string>
+#include "ScriptableEntity.h"
 namespace Hazel {
 
 
@@ -34,13 +35,33 @@ namespace Hazel {
 			:Color(color) {}
 	};
 
-	struct CameraComponent
+	struct CameraComponent//改这里就是改Component system里面的东西。
 	{
-		Camera Camera;
+		SceneCamera Camera;
 		bool Primary = true;//是不是初始的摄像头
+		bool FixedAspectRatio = false;
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
-		CameraComponent(const glm::mat4 projection)//&引用，不创建新的空间直接用它的指针会更改内容。
-			:Camera(projection) {}
+		//CameraComponent(const glm::mat4 projection)//&引用，不创建新的空间直接用它的指针会更改内容。
+			//:Camera(projection) {}//把这个删了会导致m_SecondCamera.AddComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));不能添加参数
+	};
+	struct NativeScriptComponent
+	{
+		ScriptableEntity* Instance = nullptr;
+		std::function<void()> InstantiateFunction;
+		std::function<void()> DestroyInstanceFunction;
+		std::function<void(ScriptableEntity*)> OnCreateFunction;
+		std::function<void(ScriptableEntity*)> OnDestroyFunction;
+		std::function<void(ScriptableEntity* ,Timestep)> OnUpdateFunction;
+		template<typename T>//bind的模板，T
+		void Bind()
+		{
+			InstantiateFunction = [&]() {Instance = new T(); };
+			DestroyInstanceFunction = [&]() {delete (T*)Instance; Instance = nullptr; };
+			OnCreateFunction = [](ScriptableEntity* instace) {((T*)instace)->OnCreate(); };
+			OnDestroyFunction = [](ScriptableEntity* instace) {((T*)instace)->OnDestroy(); };
+			OnUpdateFunction = [](ScriptableEntity* instace,Timestep ts) {((T*)instace)->OnUpdate(ts); };
+		}
+
 	};
 }

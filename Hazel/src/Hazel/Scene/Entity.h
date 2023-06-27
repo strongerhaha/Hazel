@@ -40,7 +40,8 @@ namespace Hazel {
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene=nullptr;//为啥不用weak ref，或者SharePoint，而用scene role pointer  12bit  只是个接口没有内容可以用这个？可能/Scene不想被删掉在内存中，仅仅只想指向一个地址，不用weak因为之后要转变为intrusive reference countingsystem
-        
 
 	};
+
+
 }

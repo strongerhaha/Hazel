@@ -56,13 +56,28 @@ namespace Hazel {
 
 	void Scene::OnUpdata(Timestep ts)//do rendering stuff
 	{
+		//update scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)//奇怪的使用方式
+				{
+					if (!nsc.Instance)
+					{
+						nsc.InstantiateFunction();
+						nsc.Instance->m_Entity = Entity{ entity,this };//设置Instance里面的entity
+						if(nsc.OnCreateFunction)//判断有木有
+							nsc.OnCreateFunction(nsc.Instance);
+					}
+					if(nsc.OnUpdateFunction)
+						nsc.OnUpdateFunction(nsc.Instance, ts);
+				});
+		}//通过Component控制
 		Camera* mainCamera = nullptr;
 		glm::mat4* cameraTransform = nullptr;
 		{
-			auto group = m_Registry.view<TransformComponent, CameraComponent>();//查看这两个component
-			for (auto entity : group)
+			auto view = m_Registry.view<TransformComponent, CameraComponent>();//查看这两个component
+			for (auto entity : view)
 			{
-				auto& [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);//绑定到一起了
+				auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);//绑定到一起了
 				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;//找到主要的Camera显示画面
@@ -83,6 +98,21 @@ namespace Hazel {
 				Renderer2D::DrawQuad(transform, sprite.Color);//循环渲染
 			}
 			Renderer2D::EndScene();
+		}
+	}
+
+	void Scene::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+		auto view = m_Registry.view<CameraComponent>();//查看这component
+		for (auto entity : view)
+		{
+			auto& cameraComponent = view.get<CameraComponent>(entity);
+			if (!cameraComponent.FixedAspectRatio)
+			{
+				cameraComponent.Camera.SetViewPortSize(width, height);
+			}
 		}
 	}
 
