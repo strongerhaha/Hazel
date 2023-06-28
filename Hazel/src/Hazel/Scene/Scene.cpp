@@ -5,38 +5,10 @@
 #include<glm/glm.hpp>
 #include"Entity.h"
 namespace Hazel {
-	static void DoMath(const glm::mat4& transform)
-	{
-
-	}
-	static void OnTransformConstruct(entt::registry& registry, entt::entity entity)
-	{
-
-	}
 
 	Scene::Scene()//初始化
 	{
-#if ENTT_EXAMPLE_CODE
-		entt::entity entity = m_Registry.create();//创建仓库
-		m_Registry.emplace<TransformComponent>(entity,glm::mat4(1.0f));//模板，类似vector
 
-		m_Registry.on_construct<TransformComponent>().connect<&OnTransformConstruct>();//每次创建TransformComponent都会调用OnTransformConstruct
-
-		if (m_Registry.has<TransformComponent>(entity))//判断是不是有这个TransformComponent
-			TransformComponent& transform = m_Registry.get<TransformComponent>(entity);
-
-		auto view = m_Registry.view<TransformComponent>();
-		for (auto entity : view)
-		{
-			TransformComponent& transform = view.get< TransformComponent>(entity);
-		}
-		auto group = m_Registry.group<TransformComponent>(entt::get<MeshComponent>);//把他们绑定到一起
-		for (auto entiy : group)
-		{
-			auto& [transform,mesh] = group.get<TransformComponent,MeshComponent>(entity);//提取数据
-			//Renderer::Submit(mesh, transform);//提交到渲染器那边
-		}
-#endif
 	}
 		
 	Scene::~Scene()
@@ -62,13 +34,11 @@ namespace Hazel {
 				{
 					if (!nsc.Instance)
 					{
-						nsc.InstantiateFunction();
+						nsc.Instance=nsc.InstantiateScript();//调用反回函数
 						nsc.Instance->m_Entity = Entity{ entity,this };//设置Instance里面的entity
-						if(nsc.OnCreateFunction)//判断有木有
-							nsc.OnCreateFunction(nsc.Instance);
+						nsc.Instance->OnCreate();//调用virtual
 					}
-					if(nsc.OnUpdateFunction)
-						nsc.OnUpdateFunction(nsc.Instance, ts);
+					nsc.Instance->OnUpdate(ts);
 				});
 		}//通过Component控制
 		Camera* mainCamera = nullptr;
@@ -77,7 +47,7 @@ namespace Hazel {
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();//查看这两个component
 			for (auto entity : view)
 			{
-				auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);//绑定到一起了
+				auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);//绑定到一起了
 				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;//找到主要的Camera显示画面
@@ -93,7 +63,7 @@ namespace Hazel {
 			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);//把他们绑定到一起
 			for (auto entity : group)
 			{
-				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
+				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
 				//Renderer::Submit(mesh, transform);//提交到渲染器那边
 				Renderer2D::DrawQuad(transform, sprite.Color);//循环渲染
 			}

@@ -48,19 +48,15 @@ namespace Hazel {
 	struct NativeScriptComponent
 	{
 		ScriptableEntity* Instance = nullptr;
-		std::function<void()> InstantiateFunction;
-		std::function<void()> DestroyInstanceFunction;
-		std::function<void(ScriptableEntity*)> OnCreateFunction;
-		std::function<void(ScriptableEntity*)> OnDestroyFunction;
-		std::function<void(ScriptableEntity* ,Timestep)> OnUpdateFunction;
+
+		ScriptableEntity* (*InstantiateScript)();
+		void(*DestroyScript)(NativeScriptComponent*);
+		//std::function<void(ScriptableEntity*)> OnCreateFunction;//用virtual代替了。Scriptentity
 		template<typename T>//bind的模板，T
 		void Bind()
 		{
-			InstantiateFunction = [&]() {Instance = new T(); };
-			DestroyInstanceFunction = [&]() {delete (T*)Instance; Instance = nullptr; };
-			OnCreateFunction = [](ScriptableEntity* instace) {((T*)instace)->OnCreate(); };
-			OnDestroyFunction = [](ScriptableEntity* instace) {((T*)instace)->OnDestroy(); };
-			OnUpdateFunction = [](ScriptableEntity* instace,Timestep ts) {((T*)instace)->OnUpdate(ts); };
+			InstantiateScript = []() {return static_cast<ScriptableEntity * >( new T()); };//CameraController强制转为ScriptableEntity  本来就是继承关系
+			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 
 	};

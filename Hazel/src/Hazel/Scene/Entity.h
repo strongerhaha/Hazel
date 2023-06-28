@@ -36,6 +36,16 @@ namespace Hazel {
 			return m_Scene->m_Registry.remove<T>(m_EntityHandle);//用模板T，判断有没有一个函数，T可以是任何，m_EntityHandle是registry里面的一个entity
 		}
 		operator bool() const { return m_EntityHandle != entt::null; }
+		operator uint32_t() const { return (uint32_t)(m_EntityHandle); }//重载uint32_t ，让他返回m_EntityHandle
+		bool operator==(const Entity& other)const//重载==，如果传进来的是entity
+		{
+			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
+		}
+		bool operator!=(const Entity& other)const//重载==，如果传进来的是entity
+		{
+			return !(*this == other);
+			//return !operator==(other);两种方式
+		} 
 
 	private:
 		entt::entity m_EntityHandle{ entt::null };

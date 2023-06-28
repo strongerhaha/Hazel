@@ -93,6 +93,8 @@ namespace Hazel {
 			
 		}
 
+		m_SceneHierarchyPanel.OnImGuiRender();
+
 		ImGui::Begin("Settings");
 		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
@@ -193,21 +195,24 @@ namespace Hazel {
 			{
 
 			}
-			void OnUpdate(Timestep ts)
+			void OnUpdate(Timestep ts)//这里重写了ScriptableEntity的virtual函数 ，覆盖了原来的
 			{
 				auto& transform = GetComponent<TransformComponent>().Transform;
 				float speed = 5.0f;
 				if (Input::IsKeyPressed(HZ_KEY_A))
-					transform[0][0] -= speed * ts;//transform是那个矩阵吧[3][0]是x，[3][1]是y,[3][2]是z [3][3]是w用来透视
+					transform[3][0] -= speed * ts;//transform是那个矩阵吧[3][0]是x，[3][1]是y,[3][2]是z [3][3]是w用来透视
 				if (Input::IsKeyPressed(HZ_KEY_D))
-					transform[0][0] += speed * ts;//transform是那个矩阵吧
+					transform[3][0] += speed * ts;//transform是那个矩阵吧
 				if (Input::IsKeyPressed(HZ_KEY_W))
-					transform[3][3] += speed * ts;//transform是那个矩阵吧
+					transform[3][1] += speed * ts;//transform是那个矩阵吧
 				if (Input::IsKeyPressed(HZ_KEY_S))
-					transform[3][3] -= speed * ts;//transform是那个矩阵吧
+					transform[3][1] -= speed * ts;//transform是那个矩阵吧
 			}
 		};
+		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();//绑定控制，通过Component系统，可以通过改变绑定更换可以控制的摄像机
+	
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);//Panel,把当前的Scene传入作为context，通信？程序之间通讯。
 	}
 
 	void EditorLayer::OnDetach()

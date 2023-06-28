@@ -1,6 +1,7 @@
 #pragma once
 #include"Hazel/Core/Core.h"
 
+#include <glm/glm.hpp>
 namespace Hazel {
 
 	class Input
@@ -11,7 +12,7 @@ namespace Hazel {
 		 static float GetMouseX(); 
 		 static float GetMouseY();
 		
-		 static std::pair<float, float> GetMousePosition();
+		 static glm::vec2 GetMousePosition();
 
 	};
 }
