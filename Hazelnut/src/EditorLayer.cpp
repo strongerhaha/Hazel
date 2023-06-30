@@ -95,36 +95,14 @@ namespace Hazel {
 
 		m_SceneHierarchyPanel.OnImGuiRender();
 
-		ImGui::Begin("Settings");
+		ImGui::Begin("status");
 		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
 		ImGui::Text("Draw Calls:%d", stats.DrawCalls);//显示drawcalls个数相关窗口
 		ImGui::Text("Quad:%d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
-		if (m_SquareEntity)
-		{
-			ImGui::Separator();
-			ImGui::Text("%s", m_SquareEntity.GetComponent<TagComponent>().Tag.c_str());//获得entity的名字tag
-			auto& squareColor = m_SquareEntity.GetComponent<SpriteRendererComponent>().Color;//获得颜色
-			ImGui::ColorEdit4("Square Color", glm::value_ptr(squareColor));
-			ImGui::Separator();
-		}
-		ImGui::DragFloat3("Camera Transform", 
-			glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
-
-		if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))//一开始是ture，没被勾选是False，类似开关switch两个摄像头
-		{
-			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
-			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
-		}
-
-		{//缩放摄像机
-			auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
-			float orthoSize = camera.GetOrthographicSize();
-			if (ImGui::DragFloat("Second Camera Ortho Size", &orthoSize))
-				camera.SetOrthographicSize(orthoSize);
-		}
+	
 
 		ImGui::End();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
@@ -174,12 +152,12 @@ namespace Hazel {
 		auto square=m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
 		//把entt：：entity和scene传进去，自己建立一个新的api控制entity
 		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });//添加颜色
-		m_SquareEntity = square;//copy
+		//m_SquareEntity = square;//copy
 
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera entity");//z在这里创建了照相机绑定了
+		m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");//z在这里创建了照相机绑定了
 		m_CameraEntity.AddComponent<CameraComponent>();
 
-		m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Space Entity");
+		m_SecondCamera = m_ActiveScene->CreateEntity("Camera B");
 		auto& cc=m_SecondCamera.AddComponent<CameraComponent>();
 		cc.Primary = false;
 
@@ -188,7 +166,8 @@ namespace Hazel {
 		public:
 			void OnCreate()
 			{
-				
+				auto& translation = GetComponent<TransformComponent>().Translation;
+				translation.x = rand() % 10 - 5.0f;//随机x坐标
 				//GetComponent<TransformComponent>();
 			}
 			void OnDestroy()
@@ -197,16 +176,16 @@ namespace Hazel {
 			}
 			void OnUpdate(Timestep ts)//这里重写了ScriptableEntity的virtual函数 ，覆盖了原来的
 			{
-				auto& transform = GetComponent<TransformComponent>().Transform;
+				auto& translation = GetComponent<TransformComponent>().Translation;
 				float speed = 5.0f;
 				if (Input::IsKeyPressed(HZ_KEY_A))
-					transform[3][0] -= speed * ts;//transform是那个矩阵吧[3][0]是x，[3][1]是y,[3][2]是z [3][3]是w用来透视
+					translation.x -= speed * ts;//transform是那个矩阵吧[3][0]是x，[3][1]是y,[3][2]是z [3][3]是w用来透视
 				if (Input::IsKeyPressed(HZ_KEY_D))
-					transform[3][0] += speed * ts;//transform是那个矩阵吧
+					translation.x += speed * ts;//transform是那个矩阵吧
 				if (Input::IsKeyPressed(HZ_KEY_W))
-					transform[3][1] += speed * ts;//transform是那个矩阵吧
+					translation.y += speed * ts;//transform是那个矩阵吧
 				if (Input::IsKeyPressed(HZ_KEY_S))
-					transform[3][1] -= speed * ts;//transform是那个矩阵吧
+					translation.y -= speed * ts;//transform是那个矩阵吧
 			}
 		};
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();

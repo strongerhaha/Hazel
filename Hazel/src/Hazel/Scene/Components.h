@@ -1,6 +1,7 @@
 #pragma once
 #include"glm/glm.hpp"
 #include"ScenceCamera.h"//继承了Camera
+#include <glm/gtc/matrix_transform.hpp>
 #include <string>
 #include "ScriptableEntity.h"
 namespace Hazel {
@@ -17,13 +18,23 @@ namespace Hazel {
 	};
 	struct TransformComponent
 	{
-		glm::mat4 Transform = glm::mat4{ 1.0f };
+		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
+		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
+		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const glm::mat4& transform)//&引用，不创建新的空间直接用它的指针会更改内容。
-			:Transform(transform) {}
-		operator glm::mat4& () { return Transform; }
-		operator const glm::mat4& () const { return Transform; }//重载运算符(glm::mat4)实现DoMath(transform);
+		TransformComponent(const glm::vec3& translation)//&引用，不创建新的空间直接用它的指针会更改内容。
+			:Translation(translation) {}
+
+		glm::mat4 GetTransform()const
+		{
+			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1,0,0 })
+				* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0,1,0 })
+				* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0,0,1 });//分别搞x，y，z进行旋转
+			return glm::translate(glm::mat4(1.0f), Translation) *
+				rotation *
+				glm:: scale(glm::mat4(1.0f), Scale);
+		}
 	};
 
 	struct SpriteRendererComponent
