@@ -12,7 +12,7 @@ namespace Hazel {
 		template<typename T,typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			HZ_CORE_ASSERT(!HasComponet<T>(), "Entity already has componet!");
+			HZ_CORE_ASSERT(!HasComponent<T>(), "Entity already has componet!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this,component);//添加时调用这函数
 			return component;
@@ -21,12 +21,12 @@ namespace Hazel {
 		template<typename T>
 		T& GetComponent()
 		{
-			HZ_CORE_ASSERT(HasComponet<T>(), "Entity does not have componet!");
+			HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have componet!");
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
 		template<typename T>
-		bool HasComponet()
+		bool HasComponent()
 		{
 			return m_Scene->m_Registry.has<T>(m_EntityHandle);//用模板T，判断有没有一个函数，T可以是任何，m_EntityHandle是registry里面的一个entity
 		}
@@ -34,7 +34,7 @@ namespace Hazel {
 		template<typename T>
 		void RemoveComponet()
 		{
-			HZ_CORE_ASSERT(HasComponet<T>(), "Entity does not have componet!");
+			HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have componet!");
 			return m_Scene->m_Registry.remove<T>(m_EntityHandle);//用模板T，判断有没有一个函数，T可以是任何，m_EntityHandle是registry里面的一个entity
 		}
 		operator bool() const { return m_EntityHandle != entt::null; }

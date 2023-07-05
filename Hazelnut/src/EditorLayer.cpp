@@ -1,8 +1,8 @@
 #include "EditorLayer.h"
+#include"Hazel/Scene/ScenceSerializer.h"
 #include"imgui/imgui.h"
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
-
 #include<chrono>
 namespace Hazel {
 	EditorLayer::EditorLayer()
@@ -25,7 +25,6 @@ namespace Hazel {
 		if(m_ViewportFocused)//如果选中才能移动摄像头
 			m_CameraController.OnUpdate(ts);
 
-	
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();//绑定画布，之后所有画的东西都会画在这framebuffer里面
 		RenderCommand::Clear();
@@ -39,7 +38,6 @@ namespace Hazel {
 	void EditorLayer::OnImGuiRender()
 	{
 		HZ_PROFILE_FUNCTION();
-
 		static bool dockingEnabled = false;
 		if (!dockingEnabled)
 		{
@@ -74,18 +72,32 @@ namespace Hazel {
 
 			// Dockspace
 			ImGuiIO& io = ImGui::GetIO();
+			ImGuiStyle& style = ImGui::GetStyle();
+			float minWinSizeX = style.WindowMinSize.x;
+			style.WindowMinSize.x = 370.0f;
 			if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 			{
 				ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
 				ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
 			}
-
-
+			style.WindowMinSize.x = minWinSizeX;//后面的都会是这样？的意思
 			if (ImGui::BeginMenuBar())
 			{
 				if (ImGui::BeginMenu("File"))
 				{
+					if (ImGui::MenuItem("Serialize"))
+					{
+						SceneSerializer serializer(m_ActiveScene);
+						serializer.Serialize("asset/scenes/Example.hazel");//文件输出，当前scene的输出有什么东东
+					}
+					if (ImGui::MenuItem("Deserialize"))
+					{
+						SceneSerializer serializer(m_ActiveScene);
+						serializer.Deserialize("asset/scenes/Example.hazel");//文件输出，当前scene的输出有什么东东
+					}
+
 					if (ImGui::MenuItem("Exit")) Application::Get().Close();
+
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenuBar();
@@ -149,6 +161,8 @@ namespace Hazel {
 		m_Framebuffer = Framebuffer::Create(fbSpec);//Framebuffer的创建
 
 		m_ActiveScene = CreateRef<Scene>();
+#if 0
+		//entity
 		auto square=m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
 		//把entt：：entity和scene传进去，自己建立一个新的api控制entity
 		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });//添加颜色
@@ -190,8 +204,11 @@ namespace Hazel {
 		};
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();//绑定控制，通过Component系统，可以通过改变绑定更换可以控制的摄像机
-	
+#endif // 0
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);//Panel,把当前的Scene传入作为context，通信？程序之间通讯。
+
+		
+
 	}
 
 	void EditorLayer::OnDetach()
