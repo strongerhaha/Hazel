@@ -13,8 +13,13 @@ namespace Hazel {
 		void OnEvent(Hazel::Event& e) override;
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-
 	private:
+		bool OnKeyPressed(KeyPressedEvent& e);
+		void NewScene();
+		void OpenScene();
+		void SaveSceneAs();
+	private:
+
 		OrthographicCameraController m_CameraController;
 		Ref<Shader> m_FlatColorShader;
 		Ref<SubTexture2D> m_SheetTestTexture;

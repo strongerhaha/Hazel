@@ -11,6 +11,7 @@ namespace Hazel {
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
 		m_Context = context;
+		m_SelectionContext = {};//重置已经选择的context不然会冲突
 	}	
 	static void DrawVec3Control(const std::string& label,glm::vec3& values,float resetValue=0.0f,float columnWidth=100.0f)//
 	{
