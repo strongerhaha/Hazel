@@ -4,6 +4,7 @@
 
 #include"SubTexture2D.h"
 #include"Camera.h"
+#include"Hazel/Renderer/Editorcamera.h"
 namespace Hazel {
 
 	class Renderer2D
@@ -13,6 +14,8 @@ namespace Hazel {
 		static void Shutdown();
 		static void BeginScene(const Camera& camera,const glm::mat4& transform);
 		static void BeginScene(const OrthographicCamera& camera);
+		static void BeginScene(const EditorCamera& camera);
+
 		static void EndScene();
 		static void Flush();
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);

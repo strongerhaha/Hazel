@@ -30,7 +30,7 @@ namespace Hazel {
 		glm::vec2 m_ViewportSize{0.0f,0.0f};
 		Ref<Scene>m_ActiveScene;
 		Ref<Framebuffer>m_Framebuffer;
-
+		EditorCamera m_EditorCamera;
 		int m_GizmoType = -1;
 		Entity m_SquareEntity;
 		Entity m_CameraEntity;

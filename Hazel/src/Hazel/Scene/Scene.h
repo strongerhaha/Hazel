@@ -1,6 +1,6 @@
 #pragma once
 #include"entt.hpp"
-
+#include"Hazel/Renderer/Editorcamera.h"
 #include"Hazel/Core/Timestep.h"
 namespace Hazel {
 	class Entity;
@@ -12,7 +12,8 @@ namespace Hazel {
 		Entity CreateEntity(const std::string& name=std::string());
 		void DestroyEntity(Entity entity);
 		//entt::registry& Reg() { return m_Registry; }
-		void OnUpdata(Timestep ts);
+		void OnUpdataEditor(Timestep ts, EditorCamera& camera);
+		void OnUpdataRuntime(Timestep ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
 		Entity GetPrimaryCameraEntity();
 	private:

@@ -31,7 +31,9 @@ namespace Hazel {
 
 	
 
-	void Scene::OnUpdata(Timestep ts)//do rendering stuff
+	
+
+	void Scene::OnUpdataRuntime(Timestep ts)//do rendering stuff
 	{
 		//update scripts
 		{
@@ -74,6 +76,22 @@ namespace Hazel {
 			}
 			Renderer2D::EndScene();
 		}
+	}
+
+	void Scene::OnUpdataEditor(Timestep ts, EditorCamera& camera)
+	{
+
+		Renderer2D::BeginScene(camera);
+
+		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);//把他们绑定到一起
+		for (auto entity : group)
+		{
+			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
+			//Renderer::Submit(mesh, transform);//提交到渲染器那边
+			Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);//循环渲染,里面有的都画出来
+		}
+		Renderer2D::EndScene();
+
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)

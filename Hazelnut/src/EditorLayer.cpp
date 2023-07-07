@@ -6,6 +6,7 @@
 #include"Hazel/Utils/PlatformUtils.h"
 #include"ImGuizmo/ImGuizmo.h"
 #include"Hazel/Math/Math.h"
+#include"Hazel/Renderer/Editorcamera.h"
 #include<chrono>
 namespace Hazel {
 	EditorLayer::EditorLayer()
@@ -23,16 +24,18 @@ namespace Hazel {
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);//对editorcamera改变大小时也要改
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);//resize 里面有SetViewPortSize
 		}
 		if(m_ViewportFocused)//如果选中才能移动摄像头
 			m_CameraController.OnUpdate(ts);
+		m_EditorCamera.OnUpdate(ts);
 
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();//绑定画布，之后所有画的东西都会画在这framebuffer里面
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
-		m_ActiveScene->OnUpdata(ts);//scene的更新,要在beginscene后面
+		m_ActiveScene->OnUpdataEditor(ts,m_EditorCamera);//scene的更新,要在beginscene后面
 		
 		m_Framebuffer->Unbind();
 
@@ -150,10 +153,16 @@ namespace Hazel {
 			float windowHeight = (float)ImGui::GetWindowHeight();
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 
-			auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			const glm::mat4& cameraProjection = camera.GetProjection();
-			glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+			// camera,从component获得的runtimecamera
+			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			// const glm::mat4& cameraProjection = camera.GetProjection();
+			// glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+			
+			// editor camera 
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
@@ -202,6 +211,8 @@ namespace Hazel {
 		m_Framebuffer = Framebuffer::Create(fbSpec);//Framebuffer的创建
 
 		m_ActiveScene = CreateRef<Scene>();
+		m_EditorCamera = EditorCamera(30.0f,1.787f,0.1f,1000.0f);
+
 #if 0
 		//entity
 		auto square=m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
@@ -257,7 +268,7 @@ namespace Hazel {
 	void EditorLayer::OnEvent(Event& e)
 	{
 		m_CameraController.OnEvent(e);
-
+		m_EditorCamera.OnEvent(e);
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 
