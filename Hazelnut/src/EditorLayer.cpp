@@ -37,6 +37,19 @@ namespace Hazel {
 		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
 		m_ActiveScene->OnUpdataEditor(ts,m_EditorCamera);//scene的更新,要在beginscene后面
 		
+		auto [mx, my] = ImGui::GetMousePos();
+		mx -= m_ViewportBounds[0].x;
+		my -= m_ViewportBounds[0].y;
+		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		my = viewportSize.y - my;//因为opengl（0，0）在左下角。为了对应opengl
+		int mouseX = (int)mx;
+		int mouseY = (int)my;
+		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		{
+			int pixeldata =m_Framebuffer->ReadPixel(1, mouseX, mouseY);//第二个framebuffer也就是，1
+			HZ_CORE_WARN("Pixeldata={0}", pixeldata);
+
+		}
 		m_Framebuffer->Unbind();
 
 	}
@@ -128,6 +141,8 @@ namespace Hazel {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
 
 		ImGui::Begin("Viewport");
+		auto viewportOffset = ImGui::GetCursorPos();//0,24?为啥，tab bar 大小
+
 		m_ViewportFocused = ImGui::IsWindowFocused();//是否选中
 		m_ViewportHovered = ImGui::IsWindowHovered();//鼠标是否在上面
 		Application::Get().GetImGuiLayer()->BlockEvents(m_ViewportFocused&&m_ViewportHovered);//如果在Viewport窗口或者在那个上面就停止那个e的event获取
@@ -140,8 +155,19 @@ namespace Hazel {
 			m_ViewportSize = { viewportPanelSize.x,viewportPanelSize.y };
 			m_CameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);//重置摄像机的大小
 		}*/
-		uint32_t textureID = m_Framebuffer->GetColorAttachment();//把这个作为ID返回就行，数值一样但是他们的地址是不一样的
+		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();//把这个作为ID返回就行，数值一样但是他们的地址是不一样的,0/1不同的colorbuffer有四个
 		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0, 1 }, { 1,0 });//将帧画在imgui里面,{1,0,0,1}画面反了
+		
+		auto windowSize = ImGui::GetWindowSize();//1041,876  窗口大小
+		ImVec2 minBound = ImGui::GetWindowPos();//viewport 左上角的点
+		minBound.x += viewportOffset.x;
+		minBound.y += viewportOffset.y;
+
+		ImVec2 maxBound = { minBound.x + windowSize.x,minBound.y + windowSize.y };//最大的范围=左上角的点+窗口大小
+		m_ViewportBounds[0] = { minBound.x,minBound.y };
+		m_ViewportBounds[1] = { maxBound.x,maxBound.y };
+
+
 		//Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity&& m_GizmoType!=-1)
@@ -206,6 +232,7 @@ namespace Hazel {
 	
 
 		FramebufferSpecification fbSpec;
+		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::RED_INTEGER,FramebufferTextureFormat::Depth };//创建了两个framebuffer、RED_INTEGER，用来mouse piking
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);//Framebuffer的创建

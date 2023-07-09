@@ -23,6 +23,7 @@ void main()
 #type fragment
 #version 330 core
 layout (location =0 )out vec4 color;
+layout (location =1 )out int color1;
 in vec2 v_TexCoord;
 in vec4 v_Color;
 in float v_TexIndex;
@@ -34,4 +35,5 @@ uniform sampler2D u_Textures[32];
 void main()
 {
 	color=texture(u_Textures[int(v_TexIndex)],v_TexCoord*v_TilingFactor)*v_Color;
+	color1=50;//placeholder for our entity id,鼠标指哪个出现对应的
 }

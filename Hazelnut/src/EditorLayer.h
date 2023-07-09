@@ -28,6 +28,7 @@ namespace Hazel {
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexArray> m_SquareVA;
 		glm::vec2 m_ViewportSize{0.0f,0.0f};
+		glm::vec2 m_ViewportBounds[2];
 		Ref<Scene>m_ActiveScene;
 		Ref<Framebuffer>m_Framebuffer;
 		EditorCamera m_EditorCamera;

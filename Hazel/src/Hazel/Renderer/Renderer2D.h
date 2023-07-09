@@ -46,10 +46,13 @@ namespace Hazel {
 		};
 		static Statistics GetStats();
 		static void ResetStats();
-		
+
+
+
 		
 	private:
-		static void FlushAndReset();
+		static void NextBatch();
+		static void StartBatch();
 	};
 
 }
