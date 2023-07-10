@@ -24,7 +24,7 @@ void main()
 }
 
 #type fragment
-#version 330 core
+#version 450 core
 layout (location =0 )out vec4 color;
 layout (location =1 )out int color1;
 in vec2 v_TexCoord;

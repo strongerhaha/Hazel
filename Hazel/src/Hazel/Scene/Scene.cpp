@@ -85,12 +85,14 @@ namespace Hazel {
 		Renderer2D::BeginScene(camera);
 
 		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);//把他们绑定到一起
+		
 		for (auto entity : group)
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
 			//Renderer::Submit(mesh, transform);//提交到渲染器那边
 			//Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);//循环渲染,里面有的都画出来
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分
+			//index++;
 		}
 		Renderer2D::EndScene();
 

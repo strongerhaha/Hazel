@@ -44,8 +44,8 @@ namespace Hazel {
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportSize;
-		//glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		//glm::vec2 viewportSize = m_ViewportSize;
+		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
 		my = viewportSize.y - my;//因为opengl（0，0）在左下角。为了对应opengl
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
@@ -53,8 +53,8 @@ namespace Hazel {
 		{
 			int pixelData =m_Framebuffer->ReadPixel(1, mouseX, mouseY);//ReadPixel：读取attachment里面的东西 第二个framebuffer也就是，1
 			HZ_CORE_WARN("Pixeldata={0},{1}", mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 			HZ_CORE_WARN("Pixeldata={0}", pixelData);
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());//获得鼠标停留的entity
 		}
 		m_Framebuffer->Unbind();
 
@@ -153,15 +153,14 @@ namespace Hazel {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
 
 		ImGui::Begin("Viewport");
-		auto viewportOffset = ImGui::GetCursorPos();//0,24?为啥，tab bar 大小
-		/*
+		//auto viewportOffset = ImGui::GetCursorPos();//0,24?为啥，tab bar 大小
+		
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();//windowcontent的点，排除掉上面哪个tab bar
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto viewportOffset = ImGui::GetWindowPos();//窗口的点
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-		*/
-	
+		
 
 		m_ViewportFocused = ImGui::IsWindowFocused();//是否选中
 		m_ViewportHovered = ImGui::IsWindowHovered();//鼠标是否在上面
@@ -178,7 +177,7 @@ namespace Hazel {
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();//把这个作为ID返回就行，数值一样但是他们的地址是不一样的,0/1不同的colorbuffer有四个
 		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0, 1 }, { 1,0 });//将帧画在imgui里面,{1,0,0,1}画面反了
 		
-		
+		/*
 		auto windowSize = ImGui::GetWindowSize();//1041,876  窗口大小
 		ImVec2 minBound = ImGui::GetWindowPos();//viewport 左上角的点
 		minBound.x += viewportOffset.x;
@@ -187,12 +186,14 @@ namespace Hazel {
 		ImVec2 maxBound = { minBound.x + windowSize.x,minBound.y + windowSize.y };//最大的范围=左上角的点+窗口大小
 		m_ViewportBounds[0] = { minBound.x,minBound.y };
 		m_ViewportBounds[1] = { maxBound.x,maxBound.y };
+		*/
 		
 
 
 		//Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity&& m_GizmoType!=-1)
+		
+		if (selectedEntity&& m_GizmoType!=-1&& selectedEntity.HasComponent<SpriteRendererComponent>())
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
@@ -226,7 +227,7 @@ namespace Hazel {
 		if (ImGuizmo::IsUsing())//通过拉动控制位置转向
 		{
 			glm::vec3 translation, rotation, scale;
-			Math::DecomposeTransform(transform, translation, rotation, scale);
+			Math::DecomposeTransform(transform, translation, rotation, scale);//主要计算函数
 			glm::vec3 deltaRotation = rotation - tc.Rotation;
 			tc.Translation = translation;
 			tc.Rotation += deltaRotation;
@@ -259,7 +260,11 @@ namespace Hazel {
 
 		m_ActiveScene = CreateRef<Scene>();
 		m_EditorCamera = EditorCamera(30.0f,1.787f,0.1f,1000.0f);
-
+		auto square = m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
+		//把entt：：entity和scene传进去，自己建立一个新的api控制entity
+		auto square1 = m_ActiveScene->CreateEntity("Square1"); //entity belong to scene//创建
+		square1.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,1.0f,1.0f });//添加颜色
+		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });//添加颜色
 #if 0
 		//entity
 		auto square=m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
@@ -318,8 +323,11 @@ namespace Hazel {
 		m_EditorCamera.OnEvent(e);
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+
 
 	}
+
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		if (e.GetRepeatCount() > 0)
@@ -347,22 +355,39 @@ namespace Hazel {
 			break;
 		}
 		case HZ_KEY_Q:
-			m_GizmoType = -1;
+			if (!ImGuizmo::IsUsing())//没有在用才能切换不然图片会不见
+				m_GizmoType = -1;
 			break;
-		case HZ_KEY_E:
-			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		case HZ_KEY_E://切换ImGuizmo模式
+			if(!ImGuizmo::IsUsing())
+				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 			break;
 		case HZ_KEY_R:
-			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+			if (!ImGuizmo::IsUsing())
+				m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 			break;
 		case HZ_KEY_T:
-			m_GizmoType = ImGuizmo::OPERATION::SCALE;
+			if (!ImGuizmo::IsUsing())
+				m_GizmoType = ImGuizmo::OPERATION::SCALE;
 			break;
 
 		}
 
 		return false;
 	}
+
+	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	{
+		if (e.GetMouseButton() == HZ_MOUSE_BUTTON_LEFT)
+		{
+			if(m_ViewportHovered&&!ImGuizmo::IsOver()&&!Input::IsKeyPressed(HZ_KEY_LEFT_ALT))//mouse pick m_ViewportHovered鼠标在这里面并且没有按左alt才能用并且!isover用来防止guizmo的箭头在别的地方时点到其他地方导致选了其他地方guizmo消失
+				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+
+		}
+		return false;
+	}
+
+	
 
 	void EditorLayer::NewScene()
 	{
