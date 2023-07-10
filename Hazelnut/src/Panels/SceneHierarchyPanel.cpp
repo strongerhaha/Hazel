@@ -196,12 +196,19 @@ namespace Hazel {
 		{
 			if (ImGui::MenuItem("Camera"))
 			{
-				m_SelectionContext.AddComponent<CameraComponent>();//给选中的entity加摄像机component
+				if (!m_SelectionContext.HasComponent<CameraComponent>())//防止重复添加
+					m_SelectionContext.AddComponent<CameraComponent>();
+				else
+					HZ_CORE_WARN("This entity already has the Camera Component!");
 				ImGui::CloseCurrentPopup();
 			}
-			if (ImGui::MenuItem("SpriteRenderer"))
+
+			if (ImGui::MenuItem("Sprite Renderer"))
 			{
-				m_SelectionContext.AddComponent<SpriteRendererComponent>();//给选中的entity加摄像机component
+				if (!m_SelectionContext.HasComponent<SpriteRendererComponent>())
+					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+				else
+					HZ_CORE_WARN("This entity already has the Sprite Renderer Component!");
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

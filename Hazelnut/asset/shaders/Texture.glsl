@@ -12,7 +12,7 @@ out vec2 v_TexCoord;
 out vec4 v_Color;
 out float v_TexIndex;
 out float v_TilingFactor;
-out flat int v_EntityID;
+flat out int v_EntityID;
 void main()
 {
 	v_Color=a_Color;
@@ -24,14 +24,14 @@ void main()
 }
 
 #type fragment
-#version 450 core
+#version 330 core
 layout (location =0 )out vec4 color;
 layout (location =1 )out int color1;
 in vec2 v_TexCoord;
 in vec4 v_Color;
 in float v_TexIndex;
 in float v_TilingFactor;
-in flat int v_EntityID;
+flat in int v_EntityID;
 
 uniform sampler2D u_Textures[32];
 

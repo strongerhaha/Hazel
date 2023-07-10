@@ -53,8 +53,8 @@ namespace Hazel {
 		{
 			int pixelData =m_Framebuffer->ReadPixel(1, mouseX, mouseY);//ReadPixel：读取attachment里面的东西 第二个framebuffer也就是，1
 			HZ_CORE_WARN("Pixeldata={0},{1}", mouseX, mouseY);
-			//HZ_CORE_WARN("Pixeldata={0}", pixelData);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());//获得鼠标停留的entity
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
+			HZ_CORE_WARN("Pixeldata={0}", pixelData);
 		}
 		m_Framebuffer->Unbind();
 
@@ -137,7 +137,7 @@ namespace Hazel {
 		ImGui::Begin("status");
 
 		std::string name = "None";
-		if (m_HoveredEntity)
+		if (m_HoveredEntity)//如果有就改名字
 			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 		ImGui::Text("Hovered Entity: %s", name.c_str());
 
@@ -154,6 +154,14 @@ namespace Hazel {
 
 		ImGui::Begin("Viewport");
 		auto viewportOffset = ImGui::GetCursorPos();//0,24?为啥，tab bar 大小
+		/*
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();//windowcontent的点，排除掉上面哪个tab bar
+		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportOffset = ImGui::GetWindowPos();//窗口的点
+		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+		*/
+	
 
 		m_ViewportFocused = ImGui::IsWindowFocused();//是否选中
 		m_ViewportHovered = ImGui::IsWindowHovered();//鼠标是否在上面
@@ -170,6 +178,7 @@ namespace Hazel {
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();//把这个作为ID返回就行，数值一样但是他们的地址是不一样的,0/1不同的colorbuffer有四个
 		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0, 1 }, { 1,0 });//将帧画在imgui里面,{1,0,0,1}画面反了
 		
+		
 		auto windowSize = ImGui::GetWindowSize();//1041,876  窗口大小
 		ImVec2 minBound = ImGui::GetWindowPos();//viewport 左上角的点
 		minBound.x += viewportOffset.x;
@@ -178,6 +187,7 @@ namespace Hazel {
 		ImVec2 maxBound = { minBound.x + windowSize.x,minBound.y + windowSize.y };//最大的范围=左上角的点+窗口大小
 		m_ViewportBounds[0] = { minBound.x,minBound.y };
 		m_ViewportBounds[1] = { maxBound.x,maxBound.y };
+		
 
 
 		//Gizmos
@@ -187,10 +197,8 @@ namespace Hazel {
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
-			float windowWidth = (float)ImGui::GetWindowWidth();
-			float windowHeight = (float)ImGui::GetWindowHeight();
-			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
-
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y,//设置gizmos根据窗口大小？
+				m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 			// camera,从component获得的runtimecamera
 			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
 			// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
