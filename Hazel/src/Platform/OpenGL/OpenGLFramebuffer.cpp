@@ -20,9 +20,19 @@ namespace Hazel {
 		{
 			switch (format)
 			{
-			case Hazel::FramebufferTextureFormat::DEPTH24STENCIL8:return true;
+				case Hazel::FramebufferTextureFormat::DEPTH24STENCIL8:return true;
 			}
 			return false;
+		}
+		static GLenum HazelFBTextureFormattoGL(FramebufferTextureFormat fomat)
+		{
+			switch (fomat)
+			{
+			case Hazel::FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
+			case Hazel::FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+			}
+			HZ_CORE_ASSERT(false,"");
+			return 0;
 		}
 		static void AttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, int index)//format=GL_RBGA
 		{
@@ -168,6 +178,8 @@ namespace Hazel {
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+
+		
 	}
 	void OpenGLFramebuffer::Unbind()
 	{
@@ -186,13 +198,24 @@ namespace Hazel {
 		Invalidate();
 
 	}
-	int OpenGLFramebuffer::ReadPixel(uint32_t attachementIndex, int x, int y)
+	int OpenGLFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	{
-		HZ_CORE_ASSERT(attachementIndex < m_ColorAttachments.size(),"");
+		HZ_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(),"");
 
-		glReadBuffer(GL_COLOR_ATTACHMENT0+ attachementIndex);
+		glReadBuffer(GL_COLOR_ATTACHMENT0+ attachmentIndex);
 		int pixelData;
 		glReadPixels(x,y,1,1,GL_RED_INTEGER,GL_INT,&pixelData);//用这读取shader里面的东西，或者说GPU的
 		return pixelData;
+	}
+	void OpenGLFramebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+	{
+		HZ_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "");
+
+		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
+		spec.TextureFormat;
+
+		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, 
+			Utils::HazelFBTextureFormattoGL(spec.TextureFormat), GL_INT, &value);//把value搞进去重置m_ColorAttachments[1]的
+
 	}
 }

@@ -34,21 +34,27 @@ namespace Hazel {
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();//绑定画布，之后所有画的东西都会画在这framebuffer里面
 		RenderCommand::Clear();
-		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });
+		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1 });//全部attachment都重置
+
+		//clear our entity id attachment to -1
+		m_Framebuffer->ClearAttachment(1, -1);//index =1,第二个framebuffer
+
 		m_ActiveScene->OnUpdataEditor(ts,m_EditorCamera);//scene的更新,要在beginscene后面
 		
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		glm::vec2 viewportSize = m_ViewportSize;
+		//glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
 		my = viewportSize.y - my;//因为opengl（0，0）在左下角。为了对应opengl
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
-			int pixeldata =m_Framebuffer->ReadPixel(1, mouseX, mouseY);//第二个framebuffer也就是，1
-			HZ_CORE_WARN("Pixeldata={0}", pixeldata);
-
+			int pixelData =m_Framebuffer->ReadPixel(1, mouseX, mouseY);//ReadPixel：读取attachment里面的东西 第二个framebuffer也就是，1
+			HZ_CORE_WARN("Pixeldata={0},{1}", mouseX, mouseY);
+			//HZ_CORE_WARN("Pixeldata={0}", pixelData);
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());//获得鼠标停留的entity
 		}
 		m_Framebuffer->Unbind();
 
@@ -129,6 +135,12 @@ namespace Hazel {
 		m_SceneHierarchyPanel.OnImGuiRender();
 
 		ImGui::Begin("status");
+
+		std::string name = "None";
+		if (m_HoveredEntity)
+			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+		ImGui::Text("Hovered Entity: %s", name.c_str());
+
 		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
 		ImGui::Text("Draw Calls:%d", stats.DrawCalls);//显示drawcalls个数相关窗口

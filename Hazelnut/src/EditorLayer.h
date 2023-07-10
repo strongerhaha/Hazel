@@ -36,7 +36,7 @@ namespace Hazel {
 		Entity m_SquareEntity;
 		Entity m_CameraEntity;
 		Entity m_SecondCamera;
-
+		Entity m_HoveredEntity;//当前是哪个entity
 		bool m_PrimaryCamera = true;
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;

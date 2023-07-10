@@ -72,7 +72,8 @@ namespace Hazel {
 			{
 				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
 				//Renderer::Submit(mesh, transform);//提交到渲染器那边
-				Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);//循环渲染,里面有的都画出来
+				//Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);//循环渲染,里面有的都画出来
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分
 			}
 			Renderer2D::EndScene();
 		}
@@ -88,7 +89,8 @@ namespace Hazel {
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
 			//Renderer::Submit(mesh, transform);//提交到渲染器那边
-			Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);//循环渲染,里面有的都画出来
+			//Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);//循环渲染,里面有的都画出来
+			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分
 		}
 		Renderer2D::EndScene();
 

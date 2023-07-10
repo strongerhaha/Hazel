@@ -13,6 +13,8 @@ namespace Hazel {
 		virtual void Unbind() override;
 		virtual void Resize(uint32_t Width, uint32_t Height) override;
 		virtual int ReadPixel(uint32_t attachementIndex, int x, int y)override;//根据鼠标所指的地方显示对应画出来的texture  有什么东西（fragment shader里面的）
+		virtual void ClearAttachment(uint32_t attachmentIndex, int value)override;
+
 	private:
 		uint32_t m_RendererID=0;
 		//uint32_t m_ColorAttachment=0;//返回纹理

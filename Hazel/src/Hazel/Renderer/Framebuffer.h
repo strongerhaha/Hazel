@@ -43,6 +43,8 @@ namespace Hazel {
 		virtual void Unbind() = 0;
 		virtual void Resize(uint32_t Width, uint32_t Height) = 0;
 		virtual int ReadPixel(uint32_t attachementIndex, int x, int y) = 0;//用于鼠标选择
+		virtual void ClearAttachment(uint32_t attachmentIndex,int value) = 0;//将没有画东西的地方变成-1
+
 		virtual const FramebufferSpecification& GetSpecification()const = 0;
 		static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
 		virtual  uint32_t GetColorAttachmentRendererID(uint32_t index = 0)const=0;
