@@ -1,6 +1,7 @@
 #pragma once
 #include"Hazel.h"
 #include"Panels/SceneHierarchyPanel.h"
+#include"Panels/ContentBrowserPanel.h"
 namespace Hazel {
 	class EditorLayer :public Hazel::Layer
 	{
@@ -44,6 +45,6 @@ namespace Hazel {
 		bool m_ViewportHovered = false;
 		//Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-
+		ContentBrowserPanel m_ContentBrowserPanel;
 	};
 }

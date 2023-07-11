@@ -131,8 +131,12 @@ namespace Hazel {
 			}
 			
 		}
-
+		//panel‰÷»æ
 		m_SceneHierarchyPanel.OnImGuiRender();
+		m_ContentBrowserPanel.OnImGuiRender();
+
+
+
 
 		ImGui::Begin("status");
 
