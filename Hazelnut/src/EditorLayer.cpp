@@ -9,6 +9,8 @@
 #include"Hazel/Renderer/Editorcamera.h"
 #include<chrono>
 namespace Hazel {
+	extern const std::filesystem::path g_AssetPath;//全局变量 contentbrowser里面的
+
 	EditorLayer::EditorLayer()
 		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true)
 	{
@@ -52,8 +54,8 @@ namespace Hazel {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData =m_Framebuffer->ReadPixel(1, mouseX, mouseY);//ReadPixel：读取attachment里面的东西 第二个framebuffer也就是，1
-			HZ_CORE_WARN("Pixeldata={0},{1}", mouseX, mouseY);
-			HZ_CORE_WARN("Pixeldata={0}", pixelData);
+			//HZ_CORE_WARN("Pixeldata={0},{1}", mouseX, mouseY);
+			//HZ_CORE_WARN("Pixeldata={0}", pixelData);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());//获得鼠标停留的entity
 		}
 		m_Framebuffer->Unbind();
@@ -82,6 +84,7 @@ namespace Hazel {
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 				window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 				window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+			
 			}
 
 			// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
@@ -152,13 +155,13 @@ namespace Hazel {
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 	
-
 		ImGui::End();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));//取消边界
 
 		ImGui::Begin("Viewport");
 		//auto viewportOffset = ImGui::GetCursorPos();//0,24?为啥，tab bar 大小
 		
+
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();//windowcontent的点，排除掉上面哪个tab bar
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto viewportOffset = ImGui::GetWindowPos();//窗口的点
@@ -180,7 +183,16 @@ namespace Hazel {
 		}*/
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();//把这个作为ID返回就行，数值一样但是他们的地址是不一样的,0/1不同的colorbuffer有四个
 		ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0, 1 }, { 1,0 });//将帧画在imgui里面,{1,0,0,1}画面反了
-		
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				OpenScene(std::filesystem::path(g_AssetPath) / path);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 		/*
 		auto windowSize = ImGui::GetWindowSize();//1041,876  窗口大小
 		ImVec2 minBound = ImGui::GetWindowPos();//viewport 左上角的点
@@ -405,13 +417,18 @@ namespace Hazel {
 		std::string filepath = FileDialogs::OpenFile("Hazel Scene(*.hazel)\0*.hazel\0");//对文件过滤filer
 		if (!filepath.empty())
 		{
-			m_ActiveScene = CreateRef<Scene>();
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(filepath);//文件输出，当前scene的输出有什么东东
-
+			OpenScene(filepath);
 		}
+	}
+
+	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	{
+		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Deserialize(path.string());
 	}
 
 	void EditorLayer::SaveSceneAs()
