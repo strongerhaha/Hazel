@@ -33,7 +33,7 @@ namespace Hazel {
 
 	
 
-	void Scene::OnUpdataRuntime(Timestep ts)//do rendering stuff
+	void Scene::OnUpdateRuntime(Timestep ts)//do rendering stuff
 	{
 		//update scripts
 		{
@@ -79,7 +79,7 @@ namespace Hazel {
 		}
 	}
 
-	void Scene::OnUpdataEditor(Timestep ts, EditorCamera& camera)
+	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
 	{
 		int index = 0;
 		Renderer2D::BeginScene(camera);

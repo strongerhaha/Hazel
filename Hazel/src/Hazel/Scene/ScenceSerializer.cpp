@@ -151,11 +151,20 @@ namespace Hazel {
 	}
 	bool SceneSerializer::Deserialize(const std::string& filepath)
 	{
-		std::ifstream stream(filepath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();//把里面的东西都塞到strStream
-
-		YAML::Node data = YAML::Load(strStream.str());//变成字符串然后载入
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch (YAML::ParserException e)
+		{
+			return false;
+		}
+		//std::ifstream stream(filepath);
+		//std::stringstream strStream;
+		//strStream << stream.rdbuf();//把里面的东西都塞到strStream
+		//
+		//YAML::Node data = YAML::Load(strStream.str());//变成字符串然后载入
 		if (!data["Scene"])
 			return false;
 		std::string sceneName = data["Scene"].as<std::string>();//作为string
