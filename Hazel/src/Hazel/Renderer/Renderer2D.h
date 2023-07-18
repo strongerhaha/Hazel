@@ -13,6 +13,7 @@ namespace Hazel {
 	public:
 		static void Init();
 		static void Shutdown();
+		static void Reset();
 		static void BeginScene(const Camera& camera,const glm::mat4& transform);
 		static void BeginScene(const OrthographicCamera& camera);
 		static void BeginScene(const EditorCamera& camera);
@@ -39,6 +40,7 @@ namespace Hazel {
 		static void DrawRotationQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 
 		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src ,int entityID);//component
+		
 
 		struct Statistics
 		{
@@ -56,6 +58,8 @@ namespace Hazel {
 	private:
 		static void NextBatch();
 		static void StartBatch();
+		
+
 	};
 
 }

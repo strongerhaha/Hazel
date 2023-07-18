@@ -6,6 +6,7 @@
 #include "ScriptableEntity.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include<glm/gtx/quaternion.hpp>
+#include"Hazel/Renderer/Texture.h"
 namespace Hazel {
 
 
@@ -40,10 +41,22 @@ namespace Hazel {
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color{ 1.0f,1.0f ,1.0f ,1.0f };
+		Ref<Texture2D> Texture;
+		float TilingFactor = 1.0f;
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4 color)//&引用，不创建新的空间直接用它的指针会更改内容。
 			:Color(color) {}
+	};
+	
+	struct CubeRendererComponent
+	{
+		glm::vec4 Color{ 1.0f,1.0f ,1.0f ,1.0f };
+		bool Isq = true;
+		CubeRendererComponent() = default;
+		CubeRendererComponent(const CubeRendererComponent&) = default;
+		CubeRendererComponent(const glm::vec4 color, bool isq = false)//&引用，不创建新的空间直接用它的指针会更改内容。
+			:Color(color), Isq(isq) {}
 	};
 
 	struct CameraComponent//改这里就是改Component system里面的东西。

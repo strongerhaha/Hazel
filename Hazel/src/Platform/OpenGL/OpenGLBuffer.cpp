@@ -24,7 +24,8 @@ namespace Hazel {
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
 		HZ_PROFILE_FUNCTION();
-		glDeleteBuffers(1, &m_RendererID);
+		glDeleteBuffers(1, &m_RendererID);//É¾µô
+		//std::cout << "nihao";
 	}
 
 	void OpenGLVertexBuffer::Bind() const
