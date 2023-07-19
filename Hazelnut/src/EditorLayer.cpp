@@ -158,7 +158,6 @@ namespace Hazel {
 
 
 
-
 		ImGui::Begin("status");
 
 		std::string name = "None";

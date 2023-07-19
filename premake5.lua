@@ -36,6 +36,7 @@ IncludeDir["yaml_cpp"] = "%{wks.location}/Hazel/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Hazel/vendor/ImGuizmo"
 
 
+
 group "Dependencies"
 	include "vendor/premake"
 	include "Hazel/vendor/GLFW"
@@ -43,6 +44,7 @@ group "Dependencies"
 	include "Hazel/vendor/Box2D"
 	include "Hazel/vendor/imgui"
 	include "Hazel/vendor/yaml-cpp"
+
 group ""
 
 include "Hazel"

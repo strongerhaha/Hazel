@@ -234,16 +234,6 @@ namespace Hazel {
 					ImGui::CloseCurrentPopup();
 				}
 			}
-			if (!m_SelectionContext.HasComponent<CubeRendererComponent>())
-			{
-				if (ImGui::MenuItem("Cube Renderer"))
-				{
-					m_SelectionContext.AddComponent<CubeRendererComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-	
-			
 			ImGui::EndPopup();
 		}
 		ImGui::PopItemWidth();
