@@ -82,6 +82,39 @@ namespace Hazel {
 			InstantiateScript = []() {return static_cast<ScriptableEntity * >( new T()); };//CameraController强制转为ScriptableEntity  本来就是继承关系
 			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
 		}
-
 	};
+
+	//physic
+	struct Rigidbody2DComponent
+	{
+		enum class BodyType { Static = 0, Dynamic, Kinematic };//状态，静止，动态，
+		BodyType Type = BodyType::Static;//初始化
+		bool FixedRotation = false;//是否旋转
+
+		// Storage for runtime
+		void* RuntimeBody = nullptr;
+
+		Rigidbody2DComponent() = default;
+		Rigidbody2DComponent(const Rigidbody2DComponent&) = default;
+	};
+
+	struct BoxCollider2DComponent
+	{
+		glm::vec2 Offset = { 0.0f, 0.0f };
+		glm::vec2 Size = { 0.5f, 0.5f };
+
+		// TODO(Yan): move into physics material in the future maybe
+		float Density = 1.0f;//密度
+		float Friction = 0.5f;//摩檫力
+		float Restitution = 0.0f;//回复
+		float RestitutionThreshold = 0.5f;//归还阈值
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		BoxCollider2DComponent() = default;
+		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
+	};
+
+
 }

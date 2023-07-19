@@ -35,8 +35,8 @@ project "Hazel"
 		"vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.Box2D}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.Box2D}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
@@ -48,6 +48,7 @@ project "Hazel"
 	{
 		"GLFW",
 		"Glad",
+		"Box2D",
 		"ImGui",
 		"yaml-cpp",
 		"opengl32.lib"

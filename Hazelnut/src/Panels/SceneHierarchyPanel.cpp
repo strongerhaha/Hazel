@@ -201,32 +201,49 @@ namespace Hazel {
 			ImGui::OpenPopup("AddComponent");//摁了之后冒出来一个AddComponent
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			if (ImGui::MenuItem("Camera"))
+			if (!m_SelectionContext.HasComponent<CameraComponent>())//先判断没有CameraComponent
 			{
-				if (!m_SelectionContext.HasComponent<CameraComponent>())//防止重复添加
+				if (ImGui::MenuItem("Camera"))
+				{
 					m_SelectionContext.AddComponent<CameraComponent>();
-				else
-					HZ_CORE_WARN("This entity already has the Camera Component!");
-				ImGui::CloseCurrentPopup();
+					ImGui::CloseCurrentPopup();
+				}
 			}
-
-			if (ImGui::MenuItem("Sprite Renderer"))
+			if (!m_SelectionContext.HasComponent<SpriteRendererComponent>())
 			{
-				if (!m_SelectionContext.HasComponent<SpriteRendererComponent>())
+				if (ImGui::MenuItem("Sprite Renderer"))
+				{
 					m_SelectionContext.AddComponent<SpriteRendererComponent>();
-				else
-					HZ_CORE_WARN("This entity already has the Sprite Renderer Component!");
-				ImGui::CloseCurrentPopup();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!m_SelectionContext.HasComponent<Rigidbody2DComponent>())
+			{
+				if (ImGui::MenuItem("Rigidbody 2D"))
+				{
+					m_SelectionContext.AddComponent<Rigidbody2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
 
-			if (ImGui::MenuItem("Cube Renderer"))
+			if (!m_SelectionContext.HasComponent<BoxCollider2DComponent>())
 			{
-				if (!m_SelectionContext.HasComponent<CubeRendererComponent>())
-					m_SelectionContext.AddComponent<CubeRendererComponent>();
-				else
-					HZ_CORE_WARN("This entity already has the Cube Renderer Component!");
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Box Collider 2D"))
+				{
+					m_SelectionContext.AddComponent<BoxCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
+			if (!m_SelectionContext.HasComponent<CubeRendererComponent>())
+			{
+				if (ImGui::MenuItem("Cube Renderer"))
+				{
+					m_SelectionContext.AddComponent<CubeRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+	
+			
 			ImGui::EndPopup();
 		}
 		ImGui::PopItemWidth();
@@ -310,11 +327,43 @@ namespace Hazel {
 				}
 				ImGui::EndDragDropTarget();
 			}
-
 			ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 100.0f);
-		
 		});
 
+		DrawComponent<Rigidbody2DComponent>("Rigidbody 2D", entity, [](auto& component)
+			{
+				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+				const char* currentBodyTypeString = bodyTypeStrings[(int)component.Type];
+				if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+				{
+					for (int i = 0; i < 2; i++)
+					{
+						bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
+						if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
+						{
+							currentBodyTypeString = bodyTypeStrings[i];
+							component.Type = (Rigidbody2DComponent::BodyType)i;//设置静止或者动
+						}
+
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+
+					ImGui::EndCombo();
+				}
+
+				ImGui::Checkbox("Fixed Rotation", &component.FixedRotation);
+			});
+
+		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
+			{
+				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset));
+				ImGui::DragFloat2("Size", glm::value_ptr(component.Offset));
+				ImGui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f);
+			});
 		
 
 		//用DrawComponent把下面全部替换了，不过有些有差别
