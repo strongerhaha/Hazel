@@ -4,6 +4,7 @@
 #include"Hazel/Renderer/Renderer2D.h"
 #include<glm/glm.hpp>
 #include"Entity.h"
+#include "ScriptableEntity.h"
 
 #include "box2d/b2_world.h"
 #include "box2d/b2_body.h"
@@ -37,8 +38,14 @@ namespace Hazel {
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
-		Entity entity= { m_Registry.create(),this };//用当前这this sence创建一个Entity，m_Registry.create()这个创建了一个entt：：entity
-		entity.AddComponent<TransformComponent>();//添加Component 每个创建的entity都会添加
+		return CreateEntityWithUUID(UUID(), name);
+	}
+	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
+	{
+		Entity entity = { m_Registry.create(),this };//用当前这this sence创建一个Entity，m_Registry.create()这个创建了一个entt：：entity
+		entity.AddComponent<IDComponent>(uuid);//添加IDComponent 每个创建的entity都会添加//用uuid添加
+		entity.AddComponent<TransformComponent>();//添加TransformComponent 每个创建的entity都会添加
+
 		auto& Tag = entity.AddComponent<TagComponent>();
 		Tag.Tag = name.empty() ? "Entity" : name;
 		return entity;
@@ -233,7 +240,11 @@ namespace Hazel {
 	{
 
 	}
+	template<>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
 
+	}
 	template<>
 	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
 	{

@@ -1,14 +1,22 @@
 #pragma once
 #include"glm/glm.hpp"
 #include"ScenceCamera.h"//继承了Camera
+#include"Hazel/Renderer/Texture.h"
+#include "Hazel/Core/UUID.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
-#include "ScriptableEntity.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include<glm/gtx/quaternion.hpp>
-#include"Hazel/Renderer/Texture.h"
 namespace Hazel {
 
+	struct IDComponent
+	{
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+	};
 
 	struct TagComponent
 	{
@@ -69,6 +77,9 @@ namespace Hazel {
 		//CameraComponent(const glm::mat4 projection)//&引用，不创建新的空间直接用它的指针会更改内容。
 			//:Camera(projection) {}//把这个删了会导致m_SecondCamera.AddComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));不能添加参数
 	};
+
+	// Forward declaration
+	class ScriptableEntity;//解决include嵌套的问题，这里原本需要 include”ScriptableEntity.h“，ENtity那边又要 Components.h
 	struct NativeScriptComponent
 	{
 		ScriptableEntity* Instance = nullptr;

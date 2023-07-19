@@ -126,8 +126,10 @@ namespace Hazel {
 	}
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)//每个都Serialize
 	{
+		HZ_CORE_ASSERT("",entity.HasComponent<IDComponent>());
+
 		out << YAML::BeginMap;
-		out << YAML::Key << "Entity" << YAML::Value << "13877889977";
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 		if (entity.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent";
@@ -264,7 +266,8 @@ namespace Hazel {
 					name = tagComponent["Tag"].as<std::string>();
 				HZ_CORE_TRACE("Deserialized entity with ID={0},name={1}", uuid, name);//通过文件载入scene的提示
 				//创建并画出entity
-				Entity deserializedEntity = m_Scene->CreateEntity(name);
+				//Entity deserializedEntity = m_Scene->CreateEntity(name);
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
 				{
