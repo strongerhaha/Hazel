@@ -64,8 +64,8 @@ namespace Hazel {
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
-		//glm::vec2 viewportSize = m_ViewportSize;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		glm::vec2 viewportSize = m_ViewportSize;
+		//glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
 		my = viewportSize.y - my;//因为opengl（0，0）在左下角。为了对应opengl
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
@@ -372,7 +372,7 @@ namespace Hazel {
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();//绑定控制，通过Component系统，可以通过改变绑定更换可以控制的摄像机
 #endif // 0
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);//Panel,把当前的Scene传入作为context，通信？程序之间通讯。
+		//m_SceneHierarchyPanel.SetContext(m_ActiveScene);//Panel,把当前的Scene传入作为context，通信？程序之间通讯。
 
 	}
 
@@ -413,8 +413,21 @@ namespace Hazel {
 		}
 		case HZ_KEY_S:
 		{
-			if (control&&shift)
-				SaveSceneAs();
+			if (control)
+			{
+				if (shift)
+					SaveSceneAs();
+				else
+					SaveScene();//
+			}
+			break;
+		}
+
+		// Scene Commands
+		case HZ_KEY_D:
+		{
+			if (control)
+				OnDuplicateEntity();
 			break;
 		}
 		case HZ_KEY_Q:
@@ -457,6 +470,8 @@ namespace Hazel {
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		m_EditorScenePath = std::filesystem::path();//创建
 	}
 
 	void EditorLayer::OpenScene()
@@ -470,8 +485,8 @@ namespace Hazel {
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
-	
-		
+		if (m_SceneState != SceneState::Edit)//如果不是edit状态，先让他停下来
+			OnSceneStop();
 
 		if (path.extension().string() != ".hazel")
 		{
@@ -479,13 +494,25 @@ namespace Hazel {
 			return;
 		}
 
-		m_ActiveScene = CreateRef<Scene>();
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		Ref<Scene> newScene = CreateRef<Scene>();
+		SceneSerializer serializer(newScene);
+		if (serializer.Deserialize(path.string()))
+		{
+			m_EditorScene = newScene;
+			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_SceneHierarchyPanel.SetContext(m_EditorScene);
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.Deserialize(path.string());
-	
+			m_ActiveScene = m_EditorScene;
+			m_EditorScenePath = path;//打开就要保存当前path
+		}
+	}
+
+	void EditorLayer::SaveScene()//ctrl+s保存
+	{
+		if (!m_EditorScenePath.empty())
+			SerializeScene(m_ActiveScene, m_EditorScenePath);
+		else
+			SaveSceneAs();//如果是新的并且没有Path就调用保存为
 	}
 
 	void EditorLayer::SaveSceneAs()
@@ -493,20 +520,40 @@ namespace Hazel {
 		std::string filepath = FileDialogs::SaveFile("Hazel Scene(*.hazel)\0*.hazel\0");//对文件过滤filer
 		if (!filepath.empty())
 		{
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Serialize(filepath);//文件输出，当前scene的输出有什么东东
+			SerializeScene(m_ActiveScene, filepath);
+			m_EditorScenePath = filepath;//记录当前的文档位置
 		}
 	}
+
+	void EditorLayer::SerializeScene(Ref<Scene> scene, const std::filesystem::path& path)//保存
+	{
+		SceneSerializer serializer(scene);//保存为hazel格式
+		serializer.Serialize(path.string());//文件输出，当前scene的输出有什么东东
+	}
+
 	void EditorLayer::OnScenePlay()
 	{
 		m_ActiveScene->OnRuntimeStart();
+		m_ActiveScene = Scene::Copy(m_EditorScene);//复制保存为m_EditorScene
 		m_SceneState = SceneState::Play;
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
-		m_ActiveScene->OnRuntimeStop();
 		m_SceneState = SceneState::Edit;
+		m_ActiveScene->OnRuntimeStop();
+		m_ActiveScene = m_EditorScene;//结束就变回来
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+	void EditorLayer::OnDuplicateEntity()//复制entity
+	{
+		if (m_SceneState != SceneState::Edit)
+			return;
 
+		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		if (selectedEntity)
+			m_EditorScene->DuplicateEntity(selectedEntity);
 	}
 }

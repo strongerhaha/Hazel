@@ -12,13 +12,21 @@ namespace Hazel {
 		Entity(const Entity& other) = default;
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
-
+		const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
 		template<typename T,typename... Args>
 		T& AddComponent(Args&&... args)
 		{
 			HZ_CORE_ASSERT(!HasComponent<T>(), "Entity already has componet!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this,component);//添加时调用这函数
+			return component;
+		}
+
+		template<typename T, typename... Args>
+		T& AddOrReplaceComponent(Args&&... args)
+		{
+			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
 		}
 

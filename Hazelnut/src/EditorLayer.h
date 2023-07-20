@@ -21,11 +21,14 @@ namespace Hazel {
 		void NewScene();
 		void OpenScene();
 		void OpenScene(const std::filesystem::path& path);
+		void SaveScene();
 		void SaveSceneAs();
+		void SerializeScene(Ref<Scene> scene, const std::filesystem::path& path);//
 
 		void OnScenePlay();
 		void OnSceneStop();
 
+		void OnDuplicateEntity();//¸´ÖÆ
 		// UI Panels
 		void UI_Toolbar();
 	private:
@@ -39,7 +42,12 @@ namespace Hazel {
 		Ref<VertexArray> m_SquareVA;
 		glm::vec2 m_ViewportSize{0.0f,0.0f};
 		glm::vec2 m_ViewportBounds[2];
+
 		Ref<Scene>m_ActiveScene;
+		Ref<Scene> m_EditorScene;
+
+		std::filesystem::path m_EditorScenePath;
+
 		Ref<Framebuffer>m_Framebuffer;
 		EditorCamera m_EditorCamera;
 		int m_GizmoType = -1;
