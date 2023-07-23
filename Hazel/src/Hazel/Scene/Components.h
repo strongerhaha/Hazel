@@ -67,6 +67,17 @@ namespace Hazel {
 			:Color(color), Isq(isq) {}
 	};
 
+	struct CircleRendererComponent//圆圈
+	{
+		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		float Thickness = 1.0f;
+		float Fade = 0.005f;
+
+		CircleRendererComponent() = default;
+		CircleRendererComponent(const CircleRendererComponent&) = default;
+	};
+
+
 	struct CameraComponent//改这里就是改Component system里面的东西。
 	{
 		SceneCamera Camera;

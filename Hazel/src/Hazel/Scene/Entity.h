@@ -11,8 +11,7 @@ namespace Hazel {
 		Entity(entt::entity handle,Scene* scene);
 		Entity(const Entity& other) = default;
 
-		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
-		const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
+		
 		template<typename T,typename... Args>
 		T& AddComponent(Args&&... args)
 		{
@@ -53,7 +52,8 @@ namespace Hazel {
 		operator uint32_t() const { return (uint32_t)(m_EntityHandle); }//重载uint32_t ，让他返回m_EntityHandle
 		operator entt::entity() const { return m_EntityHandle; }//entt::entity()转类型的时候调用
 
-		
+		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
 
 		bool operator==(const Entity& other)const//重载==，如果传进来的是entity
 		{

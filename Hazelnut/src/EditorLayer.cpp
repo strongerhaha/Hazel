@@ -326,8 +326,11 @@ namespace Hazel {
 		auto square = m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
 		//把entt：：entity和scene传进去，自己建立一个新的api控制entity
 		auto square1 = m_ActiveScene->CreateEntity("Square1"); //entity belong to scene//创建
-		square1.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,1.0f,1.0f });//添加颜色
-		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });//添加颜色
+		//square1.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,1.0f,1.0f });//添加颜色
+		//square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });//添加颜色
+
+		auto circle = m_ActiveScene->CreateEntity("Square1");
+		circle.AddComponent<CircleRendererComponent>();
 #if 0
 		//entity
 		auto square=m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
@@ -533,9 +536,10 @@ namespace Hazel {
 
 	void EditorLayer::OnScenePlay()
 	{
-		m_ActiveScene->OnRuntimeStart();
-		m_ActiveScene = Scene::Copy(m_EditorScene);//复制保存为m_EditorScene
 		m_SceneState = SceneState::Play;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);//先复制
+		m_ActiveScene->OnRuntimeStart();//再运行
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
@@ -543,10 +547,12 @@ namespace Hazel {
 	void EditorLayer::OnSceneStop()
 	{
 		m_SceneState = SceneState::Edit;
-		m_ActiveScene->OnRuntimeStop();
+		m_ActiveScene->OnRuntimeStop();//结束再重新赋值
 		m_ActiveScene = m_EditorScene;//结束就变回来
+
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
+
 	void EditorLayer::OnDuplicateEntity()//复制entity
 	{
 		if (m_SceneState != SceneState::Edit)

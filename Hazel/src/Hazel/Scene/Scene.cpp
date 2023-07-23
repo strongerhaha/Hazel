@@ -82,6 +82,7 @@ namespace Hazel {
 		// Copy components (except IDComponent and TagComponent)
 		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<Rigidbody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
@@ -221,6 +222,16 @@ namespace Hazel {
 				//Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);//循环渲染,里面有的都画出来
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分
 			}
+
+			
+			auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();	
+			for (auto entity : view)
+			{
+				auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+
+				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+			}
+			
 			Renderer2D::EndScene();
 		}
 	}
@@ -237,6 +248,17 @@ namespace Hazel {
 
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分 
 		}
+
+		// Draw circles
+		
+		auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+		for (auto entity : view)
+		{
+			auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+
+			Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+		}
+		
 
 		Renderer2D::EndScene();
 
@@ -264,6 +286,7 @@ namespace Hazel {
 		CopyComponentIfExists<TransformComponent>(newEntity, entity);
 		CopyComponentIfExists<SpriteRendererComponent>(newEntity, entity);
 		CopyComponentIfExists<CameraComponent>(newEntity, entity);
+		CopyComponentIfExists<CircleRendererComponent>(newEntity, entity);
 		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
 		CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
@@ -320,7 +343,10 @@ namespace Hazel {
 	void Scene::OnComponentAdded<Rigidbody2DComponent>(Entity entity, Rigidbody2DComponent& component)
 	{
 	}
-
+	template<>
+	void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component)
+	{
+	}
 	template<>
 	void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component)
 	{
