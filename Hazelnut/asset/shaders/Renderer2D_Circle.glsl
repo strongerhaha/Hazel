@@ -12,60 +12,47 @@ layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
 };
+out vec3 v_LocalPosition;
+out vec4 v_Color;
+out float v_Thickness;
+out float v_Fade;
 
-struct VertexOutput
-{
-	vec3 LocalPosition;
-	vec4 Color;
-	float Thickness;
-	float Fade;
-};
 
-layout (location = 0) out VertexOutput Output;
-layout (location = 4) out flat int v_EntityID;
-
+flat out int v_EntityID;
 void main()
 {
-	Output.LocalPosition = a_LocalPosition;
-	Output.Color = a_Color;
-	Output.Thickness = a_Thickness;
-	Output.Fade = a_Fade;
-
+	v_Color=a_Color;
+	v_LocalPosition=a_LocalPosition;
+	v_Thickness=a_Thickness;
+	v_Fade = a_Fade;
 	v_EntityID = a_EntityID;
-
 	gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
 }
+
 
 #type fragment
 #version 450 core
 
-layout(location = 0) out vec4 o_Color;
-layout(location = 1) out int o_EntityID;
+layout (location =0 )out vec4 o_Color;
+layout (location =1 )out int o_EntityID;
 
-struct VertexOutput
-{
-	vec3 LocalPosition;
-	vec4 Color;
-	float Thickness;
-	float Fade;
-};
+in vec4 v_Color;
+in vec3 v_LocalPosition;
+in float v_Thickness;
+in float v_Fade;
+flat in int v_EntityID;
 
-layout (location = 0) in VertexOutput Input;
-layout (location = 4) in flat int v_EntityID;
 
 void main()
 {
-    // Calculate distance and fill circle with white
-    float distance = 1.0 - length(Input.LocalPosition);
-    float circle = smoothstep(0.0, Input.Fade, distance);
-    circle *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance);
+	float distance =length(v_LocalPosition);
+	float circle = smoothstep(0.0, v_Fade, distance);
+    circle *= smoothstep(v_Thickness + v_Fade, v_Thickness, distance);
 
-	if (circle == 0.0)
-		discard;
 
-    // Set output color
-    o_Color = Input.Color;
+	o_Color = v_Color;
 	o_Color.a *= circle;
 
-	o_EntityID = v_EntityID;
+	o_EntityID=v_EntityID;//placeholder for our entity id,鼠标指哪个出现对应的
 }
+

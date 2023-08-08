@@ -87,7 +87,7 @@ namespace Hazel {
 		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<Rigidbody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-
+		CopyComponent<CubeRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		return newScene;
 	}
 	Entity Scene::CreateEntity(const std::string& name)
@@ -210,6 +210,7 @@ namespace Hazel {
 				}
 			}
 		}
+
 		if (mainCamera)
 		{
 			Renderer2D::BeginScene(mainCamera->GetProjection(),cameraTransform);
@@ -232,6 +233,13 @@ namespace Hazel {
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 			}
 			
+			auto view1 = m_Registry.view<TransformComponent, CubeRendererComponent>();
+			for (auto entity : view1)
+			{
+				auto [transform, cube] = view1.get<TransformComponent, CubeRendererComponent>(entity);
+
+				Renderer2D::DrawCube(transform.GetTransform(), cube, (int)entity);
+			}
 			Renderer2D::EndScene();
 		}
 	}
@@ -258,8 +266,15 @@ namespace Hazel {
 
 			Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 		}
-		
 
+		auto view1 = m_Registry.view<TransformComponent, CubeRendererComponent>();
+		for (auto entity : view1)
+		{
+			auto [transform, cube] = view1.get<TransformComponent, CubeRendererComponent>(entity);
+
+			Renderer2D::DrawCube(transform.GetTransform(), cube, (int)entity);
+		}
+		
 		Renderer2D::EndScene();
 
 	}
@@ -290,6 +305,7 @@ namespace Hazel {
 		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
 		CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+		CopyComponentIfExists<CubeRendererComponent>(newEntity, entity);
 	}
 	Entity Scene::GetPrimaryCameraEntity()
 	{
@@ -316,7 +332,9 @@ namespace Hazel {
 	template<>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
-		component.Camera.SetViewPortSize(m_ViewportWidth, m_ViewportHeight);//在scene这里实现SetViewPortSize函数，达成添加camera的时候调用一次。因为是friend class 所以可以直接调用这里的私有函数
+		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
+			component.Camera.SetViewPortSize(m_ViewportWidth, m_ViewportHeight);
+		//component.Camera.SetViewPortSize(m_ViewportWidth, m_ViewportHeight);//在scene这里实现SetViewPortSize函数，达成添加camera的时候调用一次。因为是friend class 所以可以直接调用这里的私有函数
 	}
 	template<>
 	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)

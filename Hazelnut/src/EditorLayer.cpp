@@ -50,7 +50,7 @@ namespace Hazel {
 
 				m_EditorCamera.OnUpdate(ts);
 
-				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);//渲染scene
 				break;
 			}
 			case SceneState::Play:
@@ -226,7 +226,7 @@ namespace Hazel {
 		//Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		
-		if (selectedEntity&& m_GizmoType!=-1&& selectedEntity.HasComponent<SpriteRendererComponent>())
+		if (selectedEntity&& m_GizmoType!=-1&& (selectedEntity.HasComponent<SpriteRendererComponent>()|| selectedEntity.HasComponent<CubeRendererComponent>()))
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
@@ -306,8 +306,8 @@ namespace Hazel {
 	void EditorLayer::OnAttach()
 	{
 		HZ_PROFILE_FUNCTION();
-		m_Texture = (Texture2D::Create("asset/textures/awesomeface.png"));
-		m_HazelTexture = (Texture2D::Create("asset/textures/container.jpg"));
+		//m_Texture = (Texture2D::Create("asset/textures/awesomeface.png"));
+		//m_HazelTexture = (Texture2D::Create("asset/textures/container.jpg"));
 		m_SheetTexture = (Texture2D::Create("asset/game/textures/spritesheet_objects.png"));
 		m_IconPlay = Texture2D::Create("Resources/Icons/PlayButton.png");
 		m_IconStop = Texture2D::Create("Resources/Icons/StopButton.png");
@@ -326,8 +326,7 @@ namespace Hazel {
 		auto square = m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
 		//把entt：：entity和scene传进去，自己建立一个新的api控制entity
 		auto square1 = m_ActiveScene->CreateEntity("Square1"); //entity belong to scene//创建
-		//square1.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,1.0f,1.0f });//添加颜色
-		//square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });//添加颜色
+		square1.AddComponent<CubeRendererComponent>();
 
 		auto circle = m_ActiveScene->CreateEntity("Square1");
 		circle.AddComponent<CircleRendererComponent>();
@@ -473,7 +472,7 @@ namespace Hazel {
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
+		m_EditorScene = m_ActiveScene;//设置m_EditorScene不然play的时候显示不出来
 		m_EditorScenePath = std::filesystem::path();//创建
 	}
 
@@ -498,12 +497,12 @@ namespace Hazel {
 		}
 
 		Ref<Scene> newScene = CreateRef<Scene>();
-		SceneSerializer serializer(newScene);
+		SceneSerializer serializer(newScene);//提取
 		if (serializer.Deserialize(path.string()))
 		{
 			m_EditorScene = newScene;
 			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_SceneHierarchyPanel.SetContext(m_EditorScene);
+			m_SceneHierarchyPanel.SetContext(m_EditorScene);//暂时看的是m_EditorScene
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;//打开就要保存当前path
@@ -537,11 +536,11 @@ namespace Hazel {
 	void EditorLayer::OnScenePlay()
 	{
 		m_SceneState = SceneState::Play;
-
 		m_ActiveScene = Scene::Copy(m_EditorScene);//先复制
 		m_ActiveScene->OnRuntimeStart();//再运行
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
 	}
 
 	void EditorLayer::OnSceneStop()

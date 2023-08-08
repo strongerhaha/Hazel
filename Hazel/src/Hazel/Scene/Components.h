@@ -60,11 +60,12 @@ namespace Hazel {
 	struct CubeRendererComponent
 	{
 		glm::vec4 Color{ 1.0f,1.0f ,1.0f ,1.0f };
-		bool Isq = true;
+		Ref<Texture2D> Texture;
+		float TilingFactor = 1.0f;
 		CubeRendererComponent() = default;
 		CubeRendererComponent(const CubeRendererComponent&) = default;
-		CubeRendererComponent(const glm::vec4 color, bool isq = false)//&引用，不创建新的空间直接用它的指针会更改内容。
-			:Color(color), Isq(isq) {}
+		CubeRendererComponent(const glm::vec4 color)//&引用，不创建新的空间直接用它的指针会更改内容。
+			:Color(color) {}
 	};
 
 	struct CircleRendererComponent//圆圈

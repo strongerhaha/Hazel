@@ -218,6 +218,14 @@ namespace Hazel {
 
 			out << YAML::EndMap; // CircleRendererComponent
 		}
+		if (entity.HasComponent<CubeRendererComponent>())
+		{
+			out << YAML::Key << "CubeRendererComponent";
+			out << YAML::BeginMap;
+			auto& cubeRendererComponent = entity.GetComponent<CubeRendererComponent>();
+			out << YAML::Key << "Color" << YAML::Value << cubeRendererComponent.Color;
+			out << YAML::EndMap;
+		}
 		out << YAML::EndMap;
 	}
 	void SceneSerializer::Serialize(const std::string& filepath)//ÐòÁÐ»¯
@@ -341,6 +349,14 @@ namespace Hazel {
 					crc.Thickness = circleRendererComponent["Thickness"].as<float>();
 					crc.Fade = circleRendererComponent["Fade"].as<float>();
 				}
+
+				auto cubeRendererComponent = entity["CubeRendererComponent"];
+				if (cubeRendererComponent)
+				{
+					auto& src = deserializedEntity.AddComponent<CubeRendererComponent>();
+					src.Color = cubeRendererComponent["Color"].as<glm::vec4>();
+				}
+
 			}
 		}
 		return true;

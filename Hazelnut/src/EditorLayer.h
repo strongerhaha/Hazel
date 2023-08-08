@@ -44,8 +44,10 @@ namespace Hazel {
 		glm::vec2 m_ViewportBounds[2];
 
 		Ref<Scene>m_ActiveScene;
-		Ref<Scene> m_EditorScene;
+		//Ref<Scene> m_EditorScene;
+		Ref<Scene> m_EditorScene = CreateRef<Scene>();
 
+		//Ref<Scene> newScene = CreateRef<Scene>();
 		std::filesystem::path m_EditorScenePath;
 
 		Ref<Framebuffer>m_Framebuffer;
