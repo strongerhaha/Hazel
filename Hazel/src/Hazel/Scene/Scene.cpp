@@ -11,7 +11,6 @@
 #include "box2d/b2_fixture.h"
 #include "box2d/b2_polygon_shape.h"
 
-
 namespace Hazel {
 
 	static b2BodyType Rigidbody2DTypeToBox2DBody(Rigidbody2DComponent::BodyType bodyType)
@@ -105,6 +104,17 @@ namespace Hazel {
 		return entity;
 	}
 
+	Entity Scene::CreateLightEntity(const std::string& name)
+	{
+		Entity entity = { m_Registry.create(),this };//用当前这this sence创建一个Entity，m_Registry.create()这个创建了一个entt：：entity
+		entity.AddComponent<IDComponent>(UUID());//添加IDComponent 每个创建的entity都会添加//用uuid添加
+		entity.AddComponent<TransformComponent>();//添加TransformComponent 每个创建的entity都会添加
+		entity.AddComponent<LightSystemComponent>();
+		auto& Tag = entity.AddComponent<TagComponent>();
+		Tag.Tag = name.empty() ? "Light System Entity" : name;
+		return entity;
+	}
+
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
@@ -186,7 +196,7 @@ namespace Hazel {
 				Entity entity = { e, this };
 				auto& transform = entity.GetComponent<TransformComponent>();
 				auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
+				
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				const auto& position = body->GetPosition();
 				transform.Translation.x = position.x;
@@ -213,8 +223,10 @@ namespace Hazel {
 
 		if (mainCamera)
 		{
-			Renderer2D::BeginScene(mainCamera->GetProjection(),cameraTransform);
 
+
+			Renderer2D::BeginScene(mainCamera->GetProjection(),cameraTransform);//这里设置了相机的projection和view
+			
 			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);//把他们绑定到一起
 			for (auto entity : group)
 			{
@@ -248,15 +260,30 @@ namespace Hazel {
 	{
 		int index = 0;
 		Renderer2D::BeginScene(camera);
+	
+		bool HasLight = false;
+		glm::vec3 LightPos;	glm::vec3 LightColor;
+		
+		auto view2 = m_Registry.view<TransformComponent, LightSystemComponent>();
+		for (auto entity : view2)
+		{
+			auto [transform, LightSystem] = view2.get<TransformComponent, LightSystemComponent>(entity);
+			LightPos = LightSystem.LightPos;
+			LightColor = LightSystem.LightColor;
+			HasLight = true;
+		}
 		
 		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);//把他们绑定到一起
 		for (auto entity : group)
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
-
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分 
+			//Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分 
+			
+			if (sprite.LightSwitch && HasLight)
+				Renderer2D::DrawLightSprite(transform.GetTransform(), sprite, LightPos, LightColor, (int)entity);
+			else
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分 
 		}
-
 		// Draw circles
 		
 		auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
@@ -374,5 +401,9 @@ namespace Hazel {
 	{
 
 	}
+	template<>
+	void Scene::OnComponentAdded<LightSystemComponent>(Entity entity, LightSystemComponent& component)
+	{
 
+	}
 }

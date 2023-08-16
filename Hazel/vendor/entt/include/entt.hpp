@@ -3625,6 +3625,8 @@ class sparse_set {
 
         sparse_set_iterator() ENTT_NOEXCEPT = default;
 
+
+
         sparse_set_iterator & operator++() ENTT_NOEXCEPT {
             return --index, *this;
         }

@@ -50,6 +50,7 @@ namespace Hazel {
 	{
 		glm::vec4 Color{ 1.0f,1.0f ,1.0f ,1.0f };
 		Ref<Texture2D> Texture;
+		bool LightSwitch = false;
 		float TilingFactor = 1.0f;
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -88,6 +89,17 @@ namespace Hazel {
 		CameraComponent(const CameraComponent&) = default;
 		//CameraComponent(const glm::mat4 projection)//&引用，不创建新的空间直接用它的指针会更改内容。
 			//:Camera(projection) {}//把这个删了会导致m_SecondCamera.AddComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));不能添加参数
+	};
+
+	struct LightCubeRendererComponent
+	{
+		glm::vec4 Color{ 1.0f,1.0f ,1.0f ,1.0f };
+		Ref<Texture2D> Texture;
+		float TilingFactor = 1.0f;
+		LightCubeRendererComponent() = default;
+		LightCubeRendererComponent(const LightCubeRendererComponent&) = default;
+		LightCubeRendererComponent(const glm::vec4 color)//&引用，不创建新的空间直接用它的指针会更改内容。
+			:Color(color) {}
 	};
 
 	// Forward declaration
@@ -139,5 +151,13 @@ namespace Hazel {
 		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 	};
 
+	struct LightSystemComponent
+	{
+		glm::vec3 LightPos = { 0.0f, 3.0f,0.0f };
+		glm::vec3 LightColor = { 1.0f, 1.0f,1.0f };
+				
+		LightSystemComponent() = default;
+		LightSystemComponent(const LightSystemComponent&) = default;
+	};
 
 }

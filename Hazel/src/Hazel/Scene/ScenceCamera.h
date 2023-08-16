@@ -1,6 +1,8 @@
 #pragma once
 #include"Hazel/Renderer/Camera.h"
+
 namespace Hazel {
+
 	class SceneCamera :public Camera
 	{
 	public:
@@ -27,9 +29,9 @@ namespace Hazel {
 		float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
 		void SetPerspectiveFarClip(float farClip) { m_PerspectiveFar = farClip; RecalculateProjection(); }
 		
-
 		ProjectionType GetProjectionType()const { return m_ProjectionType; }//公有函数返回私有属性
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; RecalculateProjection();}//设置类型，P or O
+		
 	private:
 		void RecalculateProjection();
 	private:
@@ -41,6 +43,8 @@ namespace Hazel {
 		float m_PerspectiveFOV = glm::radians(45.0f);
 		float m_PerspectiveNear = 0.01f, m_PerspectiveFar = 1000.0f;
 
+
+		
 	};
 
 }

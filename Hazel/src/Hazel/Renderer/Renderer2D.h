@@ -37,6 +37,9 @@ namespace Hazel {
 		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src ,int entityID);//component
 		static void DrawCube(const glm::mat4& transform, CubeRendererComponent& src, int entityID);//component
 		static void DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
+		static void DrawLightQuad(const glm::mat4& transform, const glm::vec4& color,  const glm::vec3& lightPos, const glm::vec3& lightColor,int entityID = -1);//component
+		static void DrawLightQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec3& lightPos, const glm::vec3& lightColor, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f), int entityID = -1);
+		static void DrawLightSprite(const glm::mat4& transform, SpriteRendererComponent& src,  const glm::vec3& lightPos, const glm::vec3& lightColor, int entityID);//component
 
 		struct Statistics
 		{
@@ -48,8 +51,7 @@ namespace Hazel {
 		static Statistics GetStats();
 		static void ResetStats();
 
-
-
+	
 		
 	private:
 		static void NextBatch();

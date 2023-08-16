@@ -1,10 +1,11 @@
 #include"hzpch.h"
 #include"ScenceCamera.h"
+
 #include<glm/gtc/matrix_transform.hpp>
+
 namespace Hazel {
 	SceneCamera::SceneCamera()
 	{
-		RecalculateProjection();
 	}
 	//SceneCamera::~SceneCamera();
 	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
@@ -25,15 +26,16 @@ namespace Hazel {
 	}
 	void SceneCamera::SetViewPortSize(uint32_t width, uint32_t height)
 	{
-		HZ_CORE_ASSERT(width > 0 && height > 0,"");
+		HZ_CORE_ASSERT(width > 0 && height > 0,"1");
 		m_AspectRatio = (float)width / (float)height;
 		RecalculateProjection();
 	}
+
 	void SceneCamera::RecalculateProjection()//为了不让resize的时候被缩小
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
 		{
-			m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);//改一下Projection就行
+			m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);//改一下Projection就行 直接改的是camera里面的
 		}
 		else
 		{

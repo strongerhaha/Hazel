@@ -96,6 +96,8 @@ namespace Hazel {
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 				m_Context->CreateEntity("Empty Entity");
+			if (ImGui::MenuItem("Create Light System Entity"))
+				m_Context->CreateLightEntity("Light System");
 			ImGui::EndPopup();
 		}
 		}
@@ -253,6 +255,14 @@ namespace Hazel {
 					ImGui::CloseCurrentPopup();
 				}
 			}
+			if (!m_SelectionContext.HasComponent<LightSystemComponent>())
+			{
+				if (ImGui::MenuItem("Light Renderer"))
+				{
+					m_SelectionContext.AddComponent<LightSystemComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
 			ImGui::EndPopup();
 		}
 		ImGui::PopItemWidth();
@@ -264,6 +274,11 @@ namespace Hazel {
 			component.Rotation = glm::radians(rotation);
 			DrawVec3Control("Scale", component.Scale, 1.0f);//把resetvalue设置为1.0f
 		});
+		DrawComponent <LightSystemComponent> ("LightSystemComponent", entity, [](auto& component)
+			{
+				DrawVec3Control("LightPos", component.LightPos);//自己写的控制X,Y,Z
+				ImGui::ColorEdit3("LightColor", glm::value_ptr(component.LightColor));
+			});
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 		{
 			auto& camera = component.Camera;
@@ -321,6 +336,8 @@ namespace Hazel {
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+			ImGui::Checkbox("Light", &component.LightSwitch);
+			ImGui::SameLine();
 			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));//渲染Texture 拖拽的地方
 			if (ImGui::BeginDragDropTarget())
 			{

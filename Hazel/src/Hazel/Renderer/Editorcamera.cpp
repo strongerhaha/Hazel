@@ -30,6 +30,7 @@ namespace Hazel {
 		m_Position = CalculatePosition();
 
 		glm::quat orientation = GetOrientation();
+		//m_ViewMatrix = glm::lookAt(m_Position, m_Position + GetForwardDirection(), GetUpDirection());
 		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
 		m_ViewMatrix = glm::inverse(m_ViewMatrix);
 	}
@@ -63,10 +64,9 @@ namespace Hazel {
 	{
 		if (Input::IsKeyPressed(HZ_KEY_LEFT_ALT))
 		{
-			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-			m_InitialMousePosition = mouse;
-
+		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
+		glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+		m_InitialMousePosition = mouse;
 			if (Input::IsMouseButtonPressed(HZ_MOUSE_BUTTON_MIDDLE))
 				MousePan(delta);
 			else if (Input::IsMouseButtonPressed(HZ_MOUSE_BUTTON_LEFT))
@@ -91,6 +91,8 @@ namespace Hazel {
 		UpdateView();
 		return false;
 	}
+
+
 
 	void EditorCamera::MousePan(const glm::vec2& delta)
 	{

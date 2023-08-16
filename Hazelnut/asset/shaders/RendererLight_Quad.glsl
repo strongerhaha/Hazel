@@ -9,6 +9,8 @@ layout(location = 4) in float a_TilingFactor;
 layout(location = 5) in int a_EntityID;
 layout(location = 6) in vec3 a_Normal;
 
+uniform mat4 model;
+
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
@@ -24,7 +26,8 @@ struct VertexOutput
 
 layout (location = 0) out VertexOutput Output;
 layout (location = 4) out flat int v_EntityID;
-
+layout (location = 5) out flat vec3 v_Normal;
+layout (location = 6) out flat vec3 v_FragPos;
 void main()
 {
 	Output.Color = a_Color;
@@ -32,7 +35,10 @@ void main()
 	Output.TexIndex = a_TexIndex;
 	Output.TilingFactor = a_TilingFactor;
 	v_EntityID = a_EntityID;
-
+	
+	v_Normal = mat3(transpose(inverse(model))) * a_Normal;  
+	v_FragPos=vec3(a_Position);
+	
 	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 }
 
@@ -52,12 +58,26 @@ struct VertexOutput
 
 layout (location = 0) in VertexOutput Input;
 layout (location = 4) in flat int v_EntityID;
+layout (location = 5) in flat vec3 v_Normal;
+layout (location = 6) in flat vec3 v_FragPos;
 
 layout (binding = 0) uniform sampler2D u_Textures[32];
 
+uniform vec3 lightPos; 
+uniform vec3 lightColor;
 void main()
 {
-	vec4 texColor =Input.Color;
+	 float ambientStrength = 0.1;
+    vec3 ambient = ambientStrength *lightColor;
+	 vec3 norm = normalize(v_Normal);
+    vec3 lightDir = normalize(lightPos - v_FragPos);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
+            
+    vec3 result = (ambient + diffuse)*Input.Color.rgb;
+
+
+	vec4 texColor = vec4(result,1.0f);
 
 	switch(int(Input.TexIndex))
 	{

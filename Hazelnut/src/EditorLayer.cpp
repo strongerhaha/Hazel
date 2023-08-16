@@ -31,7 +31,7 @@ namespace Hazel {
 		}
 		if(m_ViewportFocused)//如果选中才能移动摄像头
 			m_CameraController.OnUpdate(ts);
-		m_EditorCamera.OnUpdate(ts);
+		m_EditorCamera.OnUpdate(ts);//to do
 
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();//绑定画布，之后所有画的东西都会画在这framebuffer里面
@@ -45,16 +45,17 @@ namespace Hazel {
 		{
 			case SceneState::Edit:
 			{
-				if (m_ViewportFocused)
-					m_CameraController.OnUpdate(ts);
+				
 
-				m_EditorCamera.OnUpdate(ts);
+				m_EditorCamera.OnUpdate(ts);//to do相机控制
 
 				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);//渲染scene
 				break;
 			}
 			case SceneState::Play:
 			{
+				if (m_ViewportFocused)
+					m_CameraController.OnUpdate(ts);
 				m_ActiveScene->OnUpdateRuntime(ts);
 				break;
 			}
@@ -241,7 +242,7 @@ namespace Hazel {
 			
 			// editor camera 
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();//to do
 
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -322,7 +323,7 @@ namespace Hazel {
 		m_Framebuffer = Framebuffer::Create(fbSpec);//Framebuffer的创建
 
 		m_ActiveScene = CreateRef<Scene>();
-		m_EditorCamera = EditorCamera(30.0f,1.787f,0.1f,1000.0f);
+		m_EditorCamera = EditorCamera(30.0f,1.787f,0.1f,1000.0f);//to do  在editorcamera搞一个新的创建方式
 		auto square = m_ActiveScene->CreateEntity("Square"); //entity belong to scene//创建
 		//把entt：：entity和scene传进去，自己建立一个新的api控制entity
 		auto square1 = m_ActiveScene->CreateEntity("Square1"); //entity belong to scene//创建
