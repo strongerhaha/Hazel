@@ -1,0 +1,35 @@
+Scene: Untitled
+Entities:
+  - Entity: 12393446894931385417
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 0.699999988]
+    CubeRendererComponent:
+      Color: [1, 1, 1, 1]
+      LightSwitch: true
+  - Entity: 10652996275274815216
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Translation: [-28.7999992, 4, 3.29999995]
+      Rotation: [0, 0, 0]
+      Scale: [19.3999996, 24.7999992, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      LightSwitch: true
+  - Entity: 12964795872592551572
+    TagComponent:
+      Tag: Light System
+    TransformComponent:
+      Translation: [-0.600000024, 1.70000005, 0.600000024]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      LightSwitch: false
+    LightSystemComponent:
+      LightColor: [1, 1, 1]
+      LightPos: [-0.600000024, 1.70000005, 0.600000024]

@@ -29,5 +29,6 @@
     <None Include="asset\shaders\Renderer2D_Quad.glsl" />
     <None Include="asset\shaders\Renderer_Cube.glsl" />
     <None Include="asset\shaders\RendererLight_Quad.glsl" />
+    <None Include="asset\shaders\RendererLight_Cube.glsl" />
   </ItemGroup>
 </Project>

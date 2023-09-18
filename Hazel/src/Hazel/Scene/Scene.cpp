@@ -87,6 +87,7 @@ namespace Hazel {
 		CopyComponent<Rigidbody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CubeRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<LightSystemComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		return newScene;
 	}
 	Entity Scene::CreateEntity(const std::string& name)
@@ -269,16 +270,16 @@ namespace Hazel {
 		{
 			auto [transform, LightSystem] = view2.get<TransformComponent, LightSystemComponent>(entity);
 			LightPos = LightSystem.LightPos;
+			transform.Translation= LightSystem.LightPos;
 			LightColor = LightSystem.LightColor;
 			HasLight = true;
 		}
-		
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);//把他们绑定到一起
+		//auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);//把他们绑定到一起
+		auto group = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : group)
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);//提取数据
 			//Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分 
-			
 			if (sprite.LightSwitch && HasLight)
 				Renderer2D::DrawLightSprite(transform.GetTransform(), sprite, LightPos, LightColor, (int)entity);
 			else
@@ -294,14 +295,25 @@ namespace Hazel {
 			Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 		}
 
-		auto view1 = m_Registry.view<TransformComponent, CubeRendererComponent>();
+		/*auto view1 = m_Registry.view<TransformComponent, CubeRendererComponent>();
 		for (auto entity : view1)
 		{
 			auto [transform, cube] = view1.get<TransformComponent, CubeRendererComponent>(entity);
 
 			Renderer2D::DrawCube(transform.GetTransform(), cube, (int)entity);
+		}*/
+
+		auto group2 = m_Registry.view<TransformComponent, CubeRendererComponent>();
+		for (auto entity : group2)
+		{
+			auto [transform, cube] = group2.get<TransformComponent, CubeRendererComponent>(entity);//提取数据
+			//Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);//新的渲染函数，entity会++从而区分 
+			if (cube.LightSwitch && HasLight)
+				Renderer2D::DrawLightCube(transform.GetTransform(), cube, LightPos, LightColor, (int)entity);
+			else
+				Renderer2D::DrawCube(transform.GetTransform(), cube, (int)entity);//新的渲染函数，entity会++从而区分 
 		}
-		
+
 		Renderer2D::EndScene();
 
 	}
@@ -333,6 +345,7 @@ namespace Hazel {
 		CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
 		CopyComponentIfExists<CubeRendererComponent>(newEntity, entity);
+		CopyComponentIfExists<LightSystemComponent>(newEntity, entity);
 	}
 	Entity Scene::GetPrimaryCameraEntity()
 	{

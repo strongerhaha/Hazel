@@ -63,6 +63,7 @@ namespace Hazel {
 		glm::vec4 Color{ 1.0f,1.0f ,1.0f ,1.0f };
 		Ref<Texture2D> Texture;
 		float TilingFactor = 1.0f;
+		bool LightSwitch = false;
 		CubeRendererComponent() = default;
 		CubeRendererComponent(const CubeRendererComponent&) = default;
 		CubeRendererComponent(const glm::vec4 color)//&引用，不创建新的空间直接用它的指针会更改内容。
@@ -153,7 +154,7 @@ namespace Hazel {
 
 	struct LightSystemComponent
 	{
-		glm::vec3 LightPos = { 0.0f, 3.0f,0.0f };
+		glm::vec3 LightPos = { 1.2f, 1.0f, 2.0f };
 		glm::vec3 LightColor = { 1.0f, 1.0f,1.0f };
 				
 		LightSystemComponent() = default;

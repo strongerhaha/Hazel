@@ -11,7 +11,7 @@ namespace Hazel {
 		Hazelnut()
 			:Application("Hazelnut")
 		{
-			PushLayer(new EditorLayer());
+			PushLayer(new EditorLayer());//这里把Layer搞过去
 		}
 
 		~Hazelnut()

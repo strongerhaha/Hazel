@@ -255,14 +255,6 @@ namespace Hazel {
 					ImGui::CloseCurrentPopup();
 				}
 			}
-			if (!m_SelectionContext.HasComponent<LightSystemComponent>())
-			{
-				if (ImGui::MenuItem("Light Renderer"))
-				{
-					m_SelectionContext.AddComponent<LightSystemComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
 			ImGui::EndPopup();
 		}
 		ImGui::PopItemWidth();
@@ -358,6 +350,8 @@ namespace Hazel {
 		DrawComponent<CubeRendererComponent>("Cube Renderer", entity, [](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				ImGui::Checkbox("Light", &component.LightSwitch);
+				ImGui::SameLine();
 				ImGui::Button("Texture", ImVec2(100.0f, 0.0f));//äÖÈ¾Texture ÍÏ×§µÄµØ·½
 				if (ImGui::BeginDragDropTarget())
 				{

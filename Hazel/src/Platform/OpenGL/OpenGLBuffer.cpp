@@ -25,7 +25,6 @@ namespace Hazel {
 	{
 		HZ_PROFILE_FUNCTION();
 		glDeleteBuffers(1, &m_RendererID);//É¾µô
-		//std::cout << "nihao";
 	}
 
 	void OpenGLVertexBuffer::Bind() const
@@ -43,8 +42,8 @@ namespace Hazel {
 	void OpenGLVertexBuffer::SetData(const void* data, uint32_t size)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-		//glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+		//glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
 
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)

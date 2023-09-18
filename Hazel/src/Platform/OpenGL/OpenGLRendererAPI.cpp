@@ -5,8 +5,8 @@ namespace Hazel {
 	void OpenGLRendererAPI::Init()
 	{
 		HZ_PROFILE_FUNCTION();
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
 	}
 	void OpenGLRendererAPI::Clear()
@@ -28,8 +28,16 @@ namespace Hazel {
 	{
 		vertexArray->Bind();
 		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+	    glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	   // glBindTexture(GL_TEXTURE_2D, 0);
+		//glDrawArrays(GL_TRIANGLES, 0, count);
+	}
+	void OpenGLRendererAPI::DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount)
+	{
+		vertexArray->Bind();
+		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+		
+		glDrawArrays(GL_TRIANGLES, 0, count);
 	}
 }
 

@@ -1,0 +1,35 @@
+Scene: Untitled
+Entities:
+  - Entity: 12964795872592551572
+    TagComponent:
+      Tag: Light System
+    TransformComponent:
+      Translation: [-0.600000024, 1.70000005, 0.600000024]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      LightSwitch: false
+    LightSystemComponent:
+      LightColor: [1, 1, 1]
+      LightPos: [-0.600000024, 1.70000005, 0.600000024]
+  - Entity: 10652996275274815216
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Translation: [0.400000006, 2, 3.20000005]
+      Rotation: [0, 0, 0]
+      Scale: [19.3999996, 24.7999992, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      LightSwitch: true
+  - Entity: 8626203352850876837
+    TagComponent:
+      Tag: Efni
+    TransformComponent:
+      Translation: [0, 0.200000003, 4.9000001]
+      Rotation: [0, 0, 0]
+      Scale: [21.1000004, 24.2999992, 1]
+    CubeRendererComponent:
+      Color: [1, 1, 1, 1]
+      LightSwitch: true

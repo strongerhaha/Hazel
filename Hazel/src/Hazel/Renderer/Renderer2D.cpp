@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 namespace Hazel {
 
-	struct QuadVertex
+	struct QuadVertex//这里的顺序也要对应shader
 	{
 		glm::vec3 Position;
 		glm::vec4 Color;
@@ -18,10 +18,10 @@ namespace Hazel {
 		
 		glm::vec3 aNormal;
 		
-		//editor
 		int EntityID;
+		//editor
 	};
-
+	
 	struct CircleVertex
 	{
 		glm::vec3 WorldPosition;//
@@ -42,6 +42,20 @@ namespace Hazel {
 		float TexIndex;//对应的TexIndex0是空白，最大32
 		float TilingFactor;//大小
 		// Editor-only
+		
+		int EntityID;
+	};
+
+	struct LightCubeVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;//坐标之类
+		float TexIndex;//对应的TexIndex0是空白，最大32
+		float TilingFactor;//大小
+
+		glm::vec3 aNormal;
+
 		int EntityID;
 	};
 
@@ -67,6 +81,10 @@ namespace Hazel {
 		Ref<VertexBuffer> CubeVertexBuffer;
 		Ref<Shader> CubeShader;
 
+		Ref<VertexArray> LightCubeVertexArray;
+		Ref<VertexBuffer>LightCubeVertexBuffer;
+		Ref<Shader> LightCubeShader;
+
 		uint32_t CubeIndexCount = 0;
 		CubeVertex* CubeVertexBufferBase = nullptr;
 		CubeVertex* CubeVertexBufferPtr = nullptr;
@@ -74,6 +92,10 @@ namespace Hazel {
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
+
+		uint32_t	LightCubeIndexCount = 0;
+		LightCubeVertex* LightCubeVertexBufferBase = nullptr;
+		LightCubeVertex* LightCubeVertexBufferPtr = nullptr;
 
 		uint32_t	LightQuadIndexCount = 0;
 		QuadVertex* LightQuadVertexBufferBase = nullptr;
@@ -88,7 +110,7 @@ namespace Hazel {
 		glm::vec4 QuadVertexPositions[4];//基础坐标，用来与transform相乘
 
 		glm::vec4 CubeVertexPositions[8];
-
+		glm::vec3 nomalvertices[6];
 		Renderer2D::Statistics Stats;
 
 		struct CameraData
@@ -100,7 +122,10 @@ namespace Hazel {
 
 	};
 	static Renderer2DData s_Data;
-	
+	constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+	glm::vec3 LightCubePosition[36];
+	glm::vec2 LightTextureCoords[36];
+
 	void Renderer2D::Init()//初始化需要的东西
 	{
 		HZ_PROFILE_FUNCTION();
@@ -113,12 +138,12 @@ namespace Hazel {
 			{ShaderDataType::Float2,"a_TexCoord"},
 			{ShaderDataType::Float,"a_TexIndex"},
 			{ShaderDataType::Float,"a_TilingFactor"},
-			{ShaderDataType::Int, "a_EntityID" },
-			{ShaderDataType::Float3,"a_Normal"}
+			{ShaderDataType::Float3,"a_Normal"},
+			{ShaderDataType::Int, "a_EntityID" }
 			});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
-
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
+
 		s_Data.LightQuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 
 		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
@@ -196,6 +221,8 @@ namespace Hazel {
 		quadIB1.reset(IndexBuffer::Create(quadIndices1, s_Data.MaxIndices));
 
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);//这个需要在所有都创建完在设置
+		
+
 		delete[] quadIndices;
 		delete[] quadIndices1;
 
@@ -224,6 +251,7 @@ namespace Hazel {
 			{ShaderDataType::Int, "a_EntityID" }
 			});
 		s_Data.CubeVertexArray->AddVertexBuffer(s_Data.CubeVertexBuffer);
+
 		s_Data.CubeVertexArray->SetIndexBuffer(quadIB1); // Use quad IB1
 		s_Data.CubeVertexBufferBase = new CubeVertex[s_Data.MaxVertices];
 
@@ -235,12 +263,25 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		
+		s_Data.LightCubeVertexArray = VertexArray::Create();
+		s_Data.LightCubeVertexBuffer.reset(VertexBuffer::Create(s_Data.MaxVertices * sizeof(LightCubeVertex)));
+		s_Data.LightCubeVertexBuffer->SetLayout({
+			{ShaderDataType::Float3,"a_Position"},
+			{ShaderDataType::Float4,"a_Color"},
+			{ShaderDataType::Float2,"a_TexCoord"},
+			{ShaderDataType::Float,"a_TexIndex"},
+			{ShaderDataType::Float,"a_TilingFactor"},
+			{ShaderDataType::Float3,"a_Normal"},
+			{ShaderDataType::Int, "a_EntityID" }
+			});
+		s_Data.LightCubeVertexArray->AddVertexBuffer(s_Data.LightCubeVertexBuffer);
+		s_Data.LightCubeVertexArray->SetIndexBuffer(quadIB1); // Use quad IB1
+		s_Data.LightCubeVertexBufferBase = new LightCubeVertex[s_Data.MaxVertices];
 
 		s_Data.QuadShader = Shader::Create("asset/shaders/Renderer2D_Quad.glsl");
 		s_Data.CircleShader = Shader::Create("asset/shaders/Renderer2D_Circle.glsl");
 		s_Data.CubeShader = Shader::Create("asset/shaders/Renderer_Cube.glsl");
-		
+		s_Data.LightCubeShader= Shader::Create("asset/shaders/RendererLight_Cube.glsl");
 		s_Data.LightQuadShader = Shader::Create("asset/shaders/RendererLight_Quad.glsl");
 
 		
@@ -262,6 +303,55 @@ namespace Hazel {
 		s_Data.CubeVertexPositions[5] = { 0.5f,-0.5f,0.5f,  1.0f };
 		s_Data.CubeVertexPositions[6] = { 0.5f,0.5f,0.5f,   1.0f };
 		s_Data.CubeVertexPositions[7] = { -0.5f,0.5f,0.5f,  1.0f };
+		
+		s_Data.nomalvertices[0] = { 0.0f, 0.0f,-1.0f };
+		s_Data.nomalvertices[1] = { 0.0f, 0.0f, 1.0f };
+		s_Data.nomalvertices[2] = { -1.0f, 0.0f, 0.0f };
+		s_Data.nomalvertices[3] = { 1.0f, 0.0f, 0.0f };
+		s_Data.nomalvertices[4] = { 0.0f,-1.0f, 0.0f };
+		s_Data.nomalvertices[5] = { 0.0f,1.0f, 0.0f  };
+
+		LightCubePosition[0] = { -0.5f, -0.5f, -0.5f};		LightTextureCoords[0] = { 0.0f,  0.0f };
+		LightCubePosition[1] = { 0.5f, -0.5f, -0.5f };		LightTextureCoords[1] = { 1.0f,  0.0f };
+		LightCubePosition[2] = { 0.5f,  0.5f, -0.5f };		LightTextureCoords[2] = { 1.0f,  1.0f };
+		LightCubePosition[3] = { 0.5f,  0.5f, -0.5f };		LightTextureCoords[3] = { 1.0f,  1.0f };
+		LightCubePosition[4] = { -0.5f,  0.5f, -0.5f};		LightTextureCoords[4] = { 0.0f,  1.0f };
+		LightCubePosition[5] = { -0.5f, -0.5f, -0.5f};		LightTextureCoords[5] = { 0.0f,  0.0f };//后
+
+		LightCubePosition[6] = { -0.5f, -0.5f,  0.5f };		LightTextureCoords[6] = { 0.0f,  0.0f };
+		LightCubePosition[7] = { 0.5f, -0.5f,  0.5f };		LightTextureCoords[7] = { 1.0f,  0.0f };
+		LightCubePosition[8] = { 0.5f,  0.5f,  0.5f };		LightTextureCoords[8] = { 1.0f,  1.0f };
+		LightCubePosition[9] = { 0.5f,  0.5f,  0.5f };		LightTextureCoords[9] = { 1.0f,  1.0f };
+		LightCubePosition[10] = { -0.5f,  0.5f,  0.5f };		LightTextureCoords[10] = { 0.0f,  1.0f };
+		LightCubePosition[11] = { -0.5f, -0.5f,  0.5f };		LightTextureCoords[11] = { 0.0f,  0.0f };//前
+
+		LightCubePosition[12] = { -0.5f,  0.5f,  0.5f};		LightTextureCoords[12] = { 1.0f,  0.0f };
+		LightCubePosition[13] = { -0.5f,  0.5f, -0.5f};		LightTextureCoords[13] = { 1.0f,  1.0f };
+		LightCubePosition[14] = { -0.5f, -0.5f, -0.5f};		LightTextureCoords[14] = { 0.0f,  1.0f };
+		LightCubePosition[15] = { -0.5f, -0.5f, -0.5f};		LightTextureCoords[15] = { 0.0f,  1.0f };
+		LightCubePosition[16] = { -0.5f, -0.5f,  0.5f};		LightTextureCoords[16] = { 0.0f,  0.0f };
+		LightCubePosition[17] = { -0.5f,  0.5f,  0.5f};		LightTextureCoords[17] = { 1.0f,  0.0f };//左
+
+		LightCubePosition[18] = { 0.5f,  0.5f,  0.5f};		LightTextureCoords[18] = { 1.0f,  0.0f };
+		LightCubePosition[19] = { 0.5f,  0.5f, -0.5f};		LightTextureCoords[19] = { 1.0f,  1.0f };
+		LightCubePosition[20] = { 0.5f, -0.5f, -0.5f};		LightTextureCoords[20] = { 0.0f,  1.0f };
+		LightCubePosition[21] = { 0.5f, -0.5f, -0.5f};		LightTextureCoords[21] = { 0.0f,  1.0f };
+		LightCubePosition[22] = { 0.5f, -0.5f,  0.5f};		LightTextureCoords[22] = { 0.0f,  0.0f };
+		LightCubePosition[23] = { 0.5f,  0.5f,  0.5f};		LightTextureCoords[23] = { 1.0f,  0.0f };//右
+
+		LightCubePosition[24] = { -0.5f, -0.5f, -0.5f };		LightTextureCoords[24] = { 0.0f,  1.0f };
+		LightCubePosition[25] = { 0.5f, -0.5f, -0.5f};		LightTextureCoords[25] = { 1.0f,  1.0f };
+		LightCubePosition[26] = { 0.5f, -0.5f,  0.5f};		LightTextureCoords[26] = { 1.0f,  0.0f };
+		LightCubePosition[27] = { 0.5f, -0.5f,  0.5f};		LightTextureCoords[27] = { 1.0f,  0.0f };
+		LightCubePosition[28] = { -0.5f, -0.5f,  0.5f };		LightTextureCoords[28] = { 0.0f,  0.0f };
+		LightCubePosition[29] = { -0.5f, -0.5f, -0.5f };		LightTextureCoords[29] = { 0.0f,  1.0f };
+
+		LightCubePosition[30] = { -0.5f,  0.5f, -0.5f };		LightTextureCoords[30] = { 0.0f,  1.0f };
+		LightCubePosition[31] = { 0.5f,  0.5f, -0.5f};		LightTextureCoords[31] = { 1.0f,  1.0f };
+		LightCubePosition[32] = { 0.5f,  0.5f,  0.5f};		LightTextureCoords[32] = { 1.0f,  0.0f };
+		LightCubePosition[33] = { 0.5f,  0.5f,  0.5f};		LightTextureCoords[33] = { 1.0f,  0.0f };
+		LightCubePosition[34] = { -0.5f,  0.5f,  0.5f };		LightTextureCoords[34] = { 0.0f,  0.0f };
+		LightCubePosition[35] = { -0.5f,  0.5f, -0.5f };		LightTextureCoords[35] = { 0.0f,  1.0f };
 
 		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 	}
@@ -311,7 +401,7 @@ namespace Hazel {
 		//s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 		Flush();
 	}
-
+								 
 	void Renderer2D::Flush()
 	{
 		if (s_Data.QuadIndexCount)
@@ -366,7 +456,18 @@ namespace Hazel {
 			RenderCommand::DrawIndexed(s_Data.CubeVertexArray, s_Data.CubeIndexCount);
 			s_Data.Stats.DrawCalls++;
 		}
+		if (s_Data.LightCubeIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LightCubeVertexBufferPtr - (uint8_t*)s_Data.LightCubeVertexBufferBase);
+			s_Data.LightCubeVertexBuffer->SetData(s_Data.LightCubeVertexBufferBase, dataSize);
 
+			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+				s_Data.TextureSlots[i]->Bind(i);
+
+			s_Data.LightCubeShader->Bind();
+			RenderCommand::DrawArrays(s_Data.LightCubeVertexArray, s_Data.LightCubeIndexCount);
+			s_Data.Stats.DrawCalls++;
+		}
 	}
 	void Renderer2D::NextBatch()
 	{
@@ -463,7 +564,7 @@ namespace Hazel {
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+			s_Data.QuadVertexBufferPtr->Position = glm::vec3(transform * s_Data.QuadVertexPositions[i]);
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->aNormal = { 0.0f,  0.0f, 1.0f };
@@ -510,7 +611,7 @@ namespace Hazel {
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->aNormal = { 0.0f,  0.0f, 1.0f };
+			s_Data.QuadVertexBufferPtr->aNormal = { 0.0f,  1.0f, 0.0f };
 			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			s_Data.QuadVertexBufferPtr->EntityID = entityID;//新增加的int
 			s_Data.QuadVertexBufferPtr++;
@@ -570,7 +671,7 @@ namespace Hazel {
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
-
+		 
 		for (size_t i = 0; i < 8; i++)
 		{
 			s_Data.CubeVertexBufferPtr->Position = transform * s_Data.CubeVertexPositions[i];
@@ -651,6 +752,9 @@ namespace Hazel {
 		s_Data.CubeIndexCount = 0;
 		s_Data.CubeVertexBufferPtr = s_Data.CubeVertexBufferBase;
 
+		s_Data.LightCubeIndexCount = 0;
+		s_Data.LightCubeVertexBufferPtr = s_Data.LightCubeVertexBufferBase;
+
 		s_Data.TextureSlotIndex = 1;//纹理绑定，0是空白纹理
 	}
 	
@@ -659,7 +763,6 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 		s_Data.LightQuadShader->SetFloat3("lightPos", lightPos);
 		s_Data.LightQuadShader->SetFloat3("lightColor", lightColor);
-		s_Data.LightQuadShader->SetMat4("model", transform);
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f;
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -671,10 +774,10 @@ namespace Hazel {
 		{
 			s_Data.LightQuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.LightQuadVertexBufferPtr->Color = color;
-			s_Data.LightQuadVertexBufferPtr->aNormal = { 0.0f,  0.0f,1.0f };
 			s_Data.LightQuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.LightQuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.LightQuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.LightQuadVertexBufferPtr->aNormal = { 0.0f,  0.0f, -1.0f };
 			s_Data.LightQuadVertexBufferPtr->EntityID = entityID;
 			s_Data.LightQuadVertexBufferPtr++;
 		}
@@ -687,7 +790,6 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 		s_Data.LightQuadShader->SetFloat3("lightPos", lightPos);
 		s_Data.LightQuadShader->SetFloat3("lightColor", lightColor);
-		s_Data.LightQuadShader->SetMat4("model", transform);
 		constexpr size_t quadVertexCount = 4;
 		constexpr glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -716,10 +818,10 @@ namespace Hazel {
 		{
 			s_Data.LightQuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.LightQuadVertexBufferPtr->Color = color;
-			s_Data.LightQuadVertexBufferPtr->aNormal = { 0.0f,  0.0f,  1.0f };
 			s_Data.LightQuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.LightQuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.LightQuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.LightQuadVertexBufferPtr->aNormal = { 0.0f,  0.0f,  -1.0f };
 			s_Data.LightQuadVertexBufferPtr->EntityID = entityID;//新增加的int
 			s_Data.LightQuadVertexBufferPtr++;
 		}
@@ -735,6 +837,92 @@ namespace Hazel {
 			DrawLightQuad(transform, src.Color, lightPos, lightColor, entityID);//SpriteRendererComponent通过这个调用
 	}
 	
+	void Renderer2D::DrawLightCube(const glm::mat4& transform, const glm::vec4& color, const glm::vec3& lightPos, const glm::vec3& lightColor, int entityID)
+	{
+		HZ_PROFILE_FUNCTION();
+		s_Data.LightCubeShader->SetFloat3("lightPos", lightPos);
+		s_Data.LightCubeShader->SetFloat3("lightColor", lightColor);
+		s_Data.LightCubeShader->SetMat4("model", transform);
+		
 
+		
+		if (s_Data.LightCubeIndexCount >= Renderer2DData::MaxIndices)
+			NextBatch();
+		const float textureIndex = 0.0f;
+		const float tilingFactor = 1.0f;
+
+		
+			size_t j = 0;
+		for (size_t i = 0; i < 36; ++i)
+		{
+			s_Data.LightCubeVertexBufferPtr->Position = LightCubePosition[i];
+			s_Data.LightCubeVertexBufferPtr->Color = color;
+			s_Data.LightCubeVertexBufferPtr->TexCoord = LightTextureCoords[i];
+			s_Data.LightCubeVertexBufferPtr->TexIndex = textureIndex;
+			s_Data.LightCubeVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.LightCubeVertexBufferPtr->aNormal = s_Data.nomalvertices[j];
+			s_Data.LightCubeVertexBufferPtr->EntityID = entityID;
+			s_Data.LightCubeVertexBufferPtr++;
+			if ((i+1) % 6 == 0)
+				j++;
+		}
+
+		s_Data.LightCubeIndexCount += 36;
+		s_Data.Stats.QuadCount++;//要改   这个是正方形的个数，还有正方体的个数
+		
+		
+	}
+
+	void Renderer2D::DrawLightCube(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec3& lightPos, const glm::vec3& lightColor, float tilingFactor, const glm::vec4& tintColor, int entityID)
+	{
+		HZ_PROFILE_FUNCTION();
+		s_Data.LightCubeShader->SetFloat3("lightPos", lightPos);
+		s_Data.LightCubeShader->SetFloat3("lightColor", lightColor);
+		s_Data.LightCubeShader->SetMat4("model", transform);
+
+		float textureIndex = 0.0f;
+
+		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		{
+			if (*s_Data.TextureSlots[i].get() == *texture.get())//遍历TextureSlots，判断是否已经加载texture
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+		if (textureIndex == 0.0f)
+		{
+			textureIndex = (float)s_Data.TextureSlotIndex;
+			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+			s_Data.TextureSlotIndex++;
+		}
+		glm::vec4 color(1.0f);
+	
+			size_t j = 0;
+		for (size_t i = 0; i < 36; i++)
+		{
+			s_Data.LightCubeVertexBufferPtr->Position = LightCubePosition[i];
+			s_Data.LightCubeVertexBufferPtr->Color = color;
+			s_Data.LightCubeVertexBufferPtr->TexCoord = LightTextureCoords[i];
+			s_Data.LightCubeVertexBufferPtr->TexIndex = textureIndex;
+			s_Data.LightCubeVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.LightCubeVertexBufferPtr->aNormal = s_Data.nomalvertices[j];
+			s_Data.LightCubeVertexBufferPtr->EntityID = entityID;
+			s_Data.LightCubeVertexBufferPtr++;
+			if ((i+1) % 6 == 0)
+				j++;
+		}
+
+		s_Data.LightCubeIndexCount += 36;
+		s_Data.Stats.QuadCount++;
+	}
+
+	void Renderer2D::DrawLightCube(const glm::mat4& transform, CubeRendererComponent& src, const glm::vec3& lightPos, const glm::vec3& lightColor, int entityID)
+	{
+		if (src.Texture)
+			DrawLightCube(transform, src.Texture, lightPos, lightColor, src.TilingFactor, src.Color, entityID);
+		else
+			DrawLightCube(transform, src.Color, lightPos, lightColor, entityID);//SpriteRendererComponent通过这个调用
+	}
 	
 }

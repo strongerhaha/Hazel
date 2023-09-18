@@ -3,7 +3,7 @@
 #include"Panels/SceneHierarchyPanel.h"
 #include"Panels/ContentBrowserPanel.h"
 namespace Hazel {
-	class EditorLayer :public Hazel::Layer
+	class EditorLayer :public Hazel::Layer//这里继承了Layer这样他到时候也会调用这边的OnUpdate这些函数
 	{
 	public:
 		EditorLayer();

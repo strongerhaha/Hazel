@@ -177,6 +177,7 @@ namespace Hazel {
 			out << YAML::BeginMap;
 			auto& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << spriteRendererComponent.Color;
+			out << YAML::Key << "LightSwitch" << YAML::Value << spriteRendererComponent.LightSwitch;
 			out << YAML::EndMap;
 		}
 		if (entity.HasComponent<Rigidbody2DComponent>())//Rigidbody2DComponent 物块的状态 静止或者运动
@@ -224,6 +225,17 @@ namespace Hazel {
 			out << YAML::BeginMap;
 			auto& cubeRendererComponent = entity.GetComponent<CubeRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << cubeRendererComponent.Color;
+			out << YAML::Key << "LightSwitch" << YAML::Value << cubeRendererComponent.LightSwitch;
+			out << YAML::EndMap;
+		}
+		if (entity.HasComponent<LightSystemComponent>())
+		{
+			out << YAML::Key << "LightSystemComponent";
+			out << YAML::BeginMap;
+			auto& lightsystemComponent = entity.GetComponent<LightSystemComponent>();
+			out << YAML::Key << "LightColor" << YAML::Value << lightsystemComponent.LightColor;
+			out << YAML::Key << "LightPos" << YAML::Value << lightsystemComponent.LightPos;
+
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -320,6 +332,7 @@ namespace Hazel {
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+					src.LightSwitch = spriteRendererComponent["LightSwitch"].as<bool>();
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];
@@ -355,8 +368,16 @@ namespace Hazel {
 				{
 					auto& src = deserializedEntity.AddComponent<CubeRendererComponent>();
 					src.Color = cubeRendererComponent["Color"].as<glm::vec4>();
+					src.LightSwitch = cubeRendererComponent["LightSwitch"].as<bool>();
 				}
+				auto lightSystemComponent = entity["LightSystemComponent"];
+				if (lightSystemComponent)
+				{
+					auto& src = deserializedEntity.AddComponent<LightSystemComponent>();
+					src.LightColor = lightSystemComponent["LightColor"].as<glm::vec3>();
+					src.LightPos = lightSystemComponent["LightPos"].as<glm::vec3>();
 
+				}
 			}
 		}
 		return true;
